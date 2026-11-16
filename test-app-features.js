@@ -375,6 +375,21 @@ if (!appJs.includes('task = cleanTaskPrompt(task)')) {
   throw new Error('saveReminder does not guarantee cleanTaskPrompt(task)');
 }
 
+// 29. Test Auto Theme (Device Default)
+const defaultsMatch = appJs.match(/const defaults = \(\) => \(([\s\S]*?)\);\nlet state/);
+if (!defaultsMatch) throw new Error('Could not extract defaults() from app.js');
+const testDefaults = new Function(`return (${defaultsMatch[1]});`)();
+if (testDefaults.settings.theme !== 'system') {
+  throw new Error(`Default theme should be "system" (Auto), found "${testDefaults.settings.theme}"`);
+}
+if (!appJs.includes("const cur = state.settings.theme || 'system';")) {
+  throw new Error('themeBodyHTML does not default cur to system');
+}
+if (!appJs.includes("handleSystemThemeChange")) {
+  throw new Error('System theme change handler missing');
+}
+console.log('  ✓ Auto theme is the default and dynamically tracks device theme');
+
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {
   throw new Error('speech.dueLine still receives lowercased r.task, which corrupts proper nouns');

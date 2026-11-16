@@ -70,13 +70,21 @@ const RANGES = { 'In 30 minutes': 30 * 6e4, 'In 1 hour': 60 * 6e4 };
 
 /* ---------- state ---------- */
 const defaults = () => ({
-  settings: { name: 'Kanyinsola', voice: true, personality: 'warm', lang: 'en', pace: 'normal', theme: 'light', defaultTiming: 'At the time', notifications: false, seenBanner: false, seenPermissionPrompt: false },
+  settings: { name: 'Kanyinsola', voice: true, personality: 'warm', lang: 'en', pace: 'normal', theme: 'system', themeExplicit: false, defaultTiming: 'At the time', notifications: false, seenBanner: false, seenPermissionPrompt: false },
   reminders: [],
   log: [],
   activeId: null
 });
 let state = defaults();
-try { const saved = JSON.parse(localStorage.getItem(LS_KEY)); if (saved && saved.settings) state = Object.assign(defaults(), saved); } catch (e) {}
+try {
+  const saved = JSON.parse(localStorage.getItem(LS_KEY));
+  if (saved && saved.settings) {
+    state = Object.assign(defaults(), saved);
+    if (!saved.settings.themeExplicit) {
+      state.settings.theme = 'system';
+    }
+  }
+} catch (e) {}
 state.settings = Object.assign(defaults().settings, state.settings);
 const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} };
 
@@ -2037,15 +2045,27 @@ function shade(hex, f) { // f<0 darken toward black, f>0 lighten toward white
   return `rgb(${clamp255(r + (t - r) * p)}, ${clamp255(g + (t - g) * p)}, ${clamp255(b + (t - b) * p)})`;
 }
 const CUSTOM_TOKENS = ['--bg', '--surface', '--accent', '--ink', '--on-ink', '--ink-60', '--ink-50', '--ink-40', '--ink-30', '--line', '--line-soft', '--shadow', '--press', '--active-bg', '--knob-on'];
-const darkMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+function isDeviceDark() {
+  try {
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } catch (e) {
+    return false;
+  }
+}
+
+const darkMQ = (typeof window !== 'undefined' && window.matchMedia)
+  ? window.matchMedia('(prefers-color-scheme: dark)')
+  : null;
+
 function themeDef() {
-  const key = state.settings.theme || 'light';
-  if (key === 'system') return darkMQ && darkMQ.matches ? THEMES.dark : THEMES.light;
+  const key = state.settings.theme || 'system';
+  if (key === 'system') return isDeviceDark() ? THEMES.dark : THEMES.light;
   return THEMES[key] || THEMES.light;
 }
 function themeLabel(key) {
-  if (key === 'system') return T('autoTheme');
-  return T('theme_' + key) || (THEMES[key] ? THEMES[key].name : key);
+  const k = key || state.settings.theme || 'system';
+  if (k === 'system') return T('autoTheme');
+  return T('theme_' + k) || (THEMES[k] ? THEMES[k].name : k);
 }
 function applyTheme() {
   const el = document.documentElement;
@@ -2085,9 +2105,35 @@ function applyTheme() {
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', def.bg);
 }
-if (darkMQ && darkMQ.addEventListener) darkMQ.addEventListener('change', () => {
-  if ((state.settings.theme || 'light') === 'system') applyTheme();
+
+function handleSystemThemeChange() {
+  if ((state.settings.theme || 'system') === 'system') {
+    applyTheme();
+    const cur = navStack[navStack.length - 1];
+    if (cur && (cur.name === 'theme' || cur.name === 'settings' || cur.name === 'home')) render();
+  }
+}
+
+if (darkMQ) {
+  if (darkMQ.addEventListener) {
+    darkMQ.addEventListener('change', handleSystemThemeChange);
+  } else if (darkMQ.addListener) {
+    darkMQ.addListener(handleSystemThemeChange);
+  }
+}
+
+window.addEventListener('focus', handleSystemThemeChange);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') handleSystemThemeChange();
 });
+
+if (window.Capacitor?.Plugins?.App?.addListener) {
+  try {
+    window.Capacitor.Plugins.App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) handleSystemThemeChange();
+    });
+  } catch (e) {}
+}
 
 /* ============================================================
    FOCUS MODE & AMBIENT SOUNDSCAPES (Web Audio Synthesizer)
@@ -3647,7 +3693,7 @@ function screenSettings() {
       <div class="screen-scroll" style="padding-bottom:40px;padding-top:8px;">
         ${banner}
         <div class="settings-row" data-action="go-voice" role="button"><span class="label">${T('voice')}</span><span class="row-end"><span class="value">${esc(speech.voiceLabel())}</span>${I.arrow(15)}</span></div>
-        <div class="settings-row" data-action="go-theme" role="button"><span class="label">${T('theme')}</span><span class="row-end"><span class="value">${themeLabel(s.theme || 'light')}</span>${I.arrow(15)}</span></div>
+        <div class="settings-row" data-action="go-theme" role="button"><span class="label">${T('theme')}</span><span class="row-end"><span class="value">${themeLabel(s.theme || 'system')}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="open-language" role="button"><span class="label">${T('language')}</span><span class="row-end"><span class="value">${LANGUAGES[s.lang || 'en'] || 'English'}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="go-permissions" role="button"><span class="label">${T('permissions')}</span><span class="row-end"><span class="value">${T('manage')}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="go-about" role="button"><span class="label">${T('aboutRecall')}</span><span class="row-end"><span class="value">${I.arrow(15)}</span></span></div>
@@ -3659,7 +3705,7 @@ function screenSettings() {
    THEME GRID (also rendered on the Theme page)
    ============================================================ */
 function themeBodyHTML() {
-  const cur = state.settings.theme || 'light';
+  const cur = state.settings.theme || 'system';
   const card = k => {
     const t = THEMES[k];
     const [ir, ig, ib] = hexToRgb(t.ink);
@@ -5132,7 +5178,11 @@ screensEl.addEventListener('click', e => {
   if (!el) return;
   const a = el.dataset.action;
   if (a === 'pick-theme') {
-    state.settings.theme = el.dataset.val || 'light'; save(); applyTheme(); render();
+    state.settings.theme = el.dataset.val || 'system';
+    state.settings.themeExplicit = true;
+    save();
+    applyTheme();
+    render();
   }
   else if (a === 'pick-personality') {
     const key = el.dataset.val || 'warm';
