@@ -78,17 +78,17 @@ input{font-family:inherit;outline:none;}
 .screen.dark{background:var(--active-bg);color:var(--active-ink);}
 
 /* ---------- typography ---------- */
-.wordmark{font-size:20px;font-weight:700;letter-spacing:.8px;}
-.greeting{font-size:28px;font-weight:700;letter-spacing:0;margin-top:2px;}
-.date-line{font-size:15px;color:var(--ink-50);font-weight:400;margin-top:4px;}
-.section-title{font-size:16px;font-weight:700;letter-spacing:0;color:var(--ink);}
-.field-label{font-size:15px;color:var(--ink);font-weight:400;}
-.screen-title{font-size:18px;font-weight:700;letter-spacing:0;color:var(--ink);text-transform:none;}
+.wordmark{font-size:18px;font-weight:700;letter-spacing:.4px;}
+.greeting{font-size:24px;font-weight:700;letter-spacing:-0.2px;margin-top:2px;}
+.date-line{font-size:14px;color:var(--ink-50);font-weight:400;margin-top:4px;}
+.section-title{font-size:15px;font-weight:700;letter-spacing:0;color:var(--ink);}
+.field-label{font-size:14px;color:var(--ink);font-weight:500;}
+.screen-title{font-size:17px;font-weight:700;letter-spacing:0;color:var(--ink);text-transform:none;}
 
 /* ---------- header bar ---------- */
 .app-header{
   display:flex;align-items:center;justify-content:space-between;
-  gap:12px;padding:max(48px, calc(16px + env(safe-area-inset-top, 0px))) 20px 14px;flex-shrink:0;
+  gap:12px;padding:calc(10px + env(safe-area-inset-top, 0px)) 20px 10px;flex-shrink:0;
 }
 .app-header.header-centered{
   justify-content:center;
@@ -798,28 +798,28 @@ input{font-family:inherit;outline:none;}
   pointer-events:none;
 }
 
-/* Compact floating pill island */
+/* Standard mobile floating pill island */
 .bnav-island{
   flex:0 0 auto;
-  height:52px;
+  height:56px;
   background:var(--surface);
   border:1px solid var(--line-soft);
   border-radius:9999px;
   box-shadow:0 8px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
   display:inline-flex;align-items:center;
-  padding:4px;
-  gap:3px;
+  padding:4px 6px;
+  gap:4px;
   box-sizing:border-box;
 }
 
-/* Nav tabs: compact icon buttons, expands smoothly to show name when active */
+/* Nav tabs: standard mobile touch target (48px), expands smoothly to show name when active */
 .bnav-tab{
   display:flex;align-items:center;justify-content:center;
-  height:44px;min-width:44px;
+  height:48px;min-width:48px;
   border:none;background:transparent;
   border-radius:9999px;
   color:var(--ink-60);cursor:pointer;
-  padding:0 10px;
+  padding:0 12px;
   transition:background-color .22s cubic-bezier(.4,0,.2,1), color .2s ease, transform .12s ease, padding .22s cubic-bezier(.4,0,.2,1);
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;
   position:relative;
@@ -865,18 +865,17 @@ input{font-family:inherit;outline:none;}
   color:var(--accent);fill:var(--accent);
 }
 
-/* Compact circular Add button beside the island */
+/* Standard circular Add FAB button beside the island */
 .bnav-add-btn{
-  width:50px;height:50px;border-radius:50%;
+  width:56px;height:56px;border-radius:50%;
   background:var(--accent);color:var(--on-accent) !important;
   border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  flex:0 0 50px;
+  flex:0 0 56px;
   box-shadow:0 10px 24px -2px var(--accent-ring), 0 4px 12px rgba(0,0,0,.22);
   transition:transform .15s cubic-bezier(.2,0,0,1), box-shadow .15s ease, opacity .15s ease;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
 .bnav-add-btn svg{
   color:var(--on-accent) !important;

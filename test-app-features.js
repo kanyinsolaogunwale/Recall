@@ -519,6 +519,41 @@ if (!workflowYml.includes('path: Recall.apk')) {
 }
 console.log('  ✓ GitHub Actions build workflow configured to produce Recall.apk');
 
+// 34. Test Weekly Reflection 0-Item Speech & Localized Empty State
+['en', 'es', 'fr', 'de', 'pt'].forEach(lang => {
+  const match = appJs.match(new RegExp(`${lang}:\\s*{[\\s\\S]*?completedWeekEmpty:\\s*["']([^"']+)["']`));
+  if (!match) throw new Error(`Missing completedWeekEmpty in UI_STRINGS for ${lang}`);
+});
+if (!appJs.includes("completed === 0\n    ? T('completedWeekEmpty')") && !appJs.includes("completed === 0 ? T('completedWeekEmpty')")) {
+  throw new Error('speakWeekReflection must use completedWeekEmpty when completed === 0 to avoid "undefined of undefined"');
+}
+console.log('  ✓ Weekly reflection 0-item speech properly handled without undefined values across 5 languages');
+
+// 35. Test Mobile Navigation Bar Standard Dimensions & Header Padding
+const cssContent = fs.readFileSync(path.join(__dirname, 'app/app.css'), 'utf8');
+if (!cssContent.includes('.bnav-island{\n  flex:0 0 auto;\n  height:56px;') && !cssContent.includes('.bnav-island{flex:0 0 auto;height:56px;')) {
+  throw new Error('bnav-island height should be standard 56px mobile size');
+}
+if (!cssContent.includes('.bnav-tab{\n  display:flex;align-items:center;justify-content:center;\n  height:48px;') && !cssContent.includes('height:48px;min-width:48px;')) {
+  throw new Error('bnav-tab should meet standard 48px mobile touch target size');
+}
+if (!cssContent.includes('.bnav-add-btn{\n  width:56px;height:56px;')) {
+  throw new Error('bnav-add-btn should follow standard 56px FAB size');
+}
+if (cssContent.includes('max(48px, calc(16px + env(safe-area-inset-top')) {
+  throw new Error('Excessive top padding max(48px) should be reduced in app-header');
+}
+console.log('  ✓ Standard mobile navigation bar sizes (56px bar, 48px touch targets, 56px FAB) & reduced top padding verified');
+
+// 36. Test Native Android Permissions & Toggles
+if (!appJs.includes('LocalNotifications') || !appJs.includes('LN.requestPermissions')) {
+  throw new Error('Native Capacitor LocalNotifications permission request missing');
+}
+if (appJs.includes('window.location.href = intentUrl')) {
+  throw new Error('Invalid window.location.href intent scheme still present in togglePermission');
+}
+console.log('  ✓ Native Capacitor Android notification permission & reliable setting toggles verified');
+
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {
   throw new Error('speech.dueLine still receives lowercased r.task, which corrupts proper nouns');

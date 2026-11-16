@@ -446,6 +446,7 @@ const UI_STRINGS = {
     tonight: 'Tonight',
     weekSoFarPlanned: n => `Week so far: ${n} reminders planned.`,
     completedWeekSummary: (done, total) => `You completed ${done} of the ${total} things you planned this week.`,
+    completedWeekEmpty: "You haven't completed anything this week yet. Whenever you're ready, let's take on one small task together.",
     insightEmpty: 'Complete reminders this week and your rounded-up summary will appear here.',
     insightMorning: 'Your mornings tend to go smoother than your evenings.',
     insightEvening: 'Your evenings tend to go smoother than your mornings.',
@@ -662,6 +663,7 @@ const UI_STRINGS = {
     tonight: 'Esta noche',
     weekSoFarPlanned: n => `Semana hasta ahora: ${n} recordatorios planificados.`,
     completedWeekSummary: (done, total) => `Completaste ${done} de las ${total} cosas que planeaste esta semana.`,
+    completedWeekEmpty: "Aún no has completado nada esta semana. Cuando quieras, demos un pequeño paso juntos.",
     insightEmpty: 'Completa recordatorios esta semana y aquí aparecerá tu resumen redondeado.',
     insightMorning: 'Tus mañanas suelen ir más fluidas que tus tardes.',
     insightEvening: 'Tus tardes suelen ir más fluidas que tus mañanas.',
@@ -878,6 +880,7 @@ const UI_STRINGS = {
     tonight: 'Ce soir',
     weekSoFarPlanned: n => `Semaine jusqu'ici : ${n} rappels prévus.`,
     completedWeekSummary: (done, total) => `Vous avez terminé ${done} sur les ${total} choses prévues cette semaine.`,
+    completedWeekEmpty: "Vous n'avez encore rien terminé cette semaine. Dès que vous le souhaitez, commençons une petite tâche ensemble.",
     insightEmpty: 'Complétez des rappels cette semaine et votre bilan apparaîtra ici.',
     insightMorning: 'Vos matinées ont tendance à être plus fluides que vos soirées.',
     insightEvening: 'Vos soirées ont tendance à être plus fluides que vos matinées.',
@@ -1094,6 +1097,7 @@ const UI_STRINGS = {
     tonight: 'Heute Abend',
     weekSoFarPlanned: n => `Bisherige Woche: ${n} Erinnerungen geplant.`,
     completedWeekSummary: (done, total) => `Du hast ${done} von ${total} Dingen erledigt, die du diese Woche geplant hast.`,
+    completedWeekEmpty: "Du hast diese Woche noch nichts erledigt. Wann immer du bereit bist, lass uns gemeinsam eine kleine Aufgabe angehen.",
     insightEmpty: 'Erledige diese Woche Erinnerungen, und deine Zusammenfassung erscheint hier.',
     insightMorning: 'Deine Vormittage verlaufen meist reibungsloser als deine Abende.',
     insightEvening: 'Deine Abende verlaufen meist reibungsloser als deine Vormittage.',
@@ -1310,6 +1314,7 @@ const UI_STRINGS = {
     tonight: 'Hoje à noite',
     weekSoFarPlanned: n => `Semana até agora: ${n} lembretes planejados.`,
     completedWeekSummary: (done, total) => `Você concluiu ${done} das ${total} tarefas que planejou esta semana.`,
+    completedWeekEmpty: "Você ainda não completou nada esta semana. Quando estiver pronto, vamos dar um pequeno passo juntos.",
     insightEmpty: 'Conclua lembretes esta semana e seu resumo consolidado aparecerá aqui.',
     insightMorning: 'Suas manhãs costumam fluir melhor do que suas noites.',
     insightEvening: 'Suas noites costumam fluir melhor do que suas manhãs.',
@@ -3239,18 +3244,16 @@ function speakWeekReflection() {
   const p = speech.personality();
   const start = weekStart();
   const inWeek = e => e.at >= start && e.at <= Date.now();
+  const created = state.log.filter(e => e.type === 'created' && inWeek(e)).length;
   const completed = state.log.filter(e => e.type === 'completed' && inWeek(e)).length;
   const name = state.settings.name || 'friend';
-  const countStr = completed === 1 ? T('completedCountSingular', 1) : T('completedCountPlural', completed);
   const summaryMsg = completed === 0
-    ? T('completedWeekSummary')
-    : T('completedWeekCount', countStr);
+    ? T('completedWeekEmpty')
+    : T('completedWeekSummary', completed, created || completed);
   const insight = completed === 0
-    ? T('insightEmpty')
-    : completed < 5
-      ? T('insightFew')
-      : T('insightMany');
-  const text = `${greeting()}, ${name}. ${summaryMsg} ${insight}`;
+    ? ''
+    : (completed < 5 ? T('insightFew') : T('insightMany'));
+  const text = `${greeting()}, ${name}. ${summaryMsg}${insight ? ' ' + insight : ''}`;
   isPlayingWeekReflection = true;
   updateWeekReflectionBtn();
   toast(T('playingReflectionToast', p.name));
@@ -4021,49 +4024,64 @@ function screenAbout() {
    SCREEN: PERMISSIONS (dedicated page with direct setting toggles)
    ============================================================ */
 function openPhoneSetting(type) {
-  toast(T('openingSettings') || 'Opening phone settings...');
-  const pkg = 'com.recall.app';
-  let intentUrl = '';
-  if (type === 'notifications') {
-    if ('Notification' in window && Notification.permission !== 'granted') {
-      try { Notification.requestPermission(); } catch (e) {}
-    }
-    intentUrl = `intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=${pkg};end`;
-  } else if (type === 'microphone') {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {});
-    }
-    const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
-    if (SRPlugin && typeof SRPlugin.requestPermission === 'function') {
-      try { SRPlugin.requestPermission(); } catch (e) {}
-    }
-    intentUrl = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=${pkg};data=package:${pkg};end`;
-  } else if (type === 'overlay') {
-    intentUrl = `intent:#Intent;action=android.settings.action.MANAGE_OVERLAY_PERMISSION;package=${pkg};data=package:${pkg};end`;
-  } else if (type === 'battery') {
-    intentUrl = `intent:#Intent;action=android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS;package=${pkg};end`;
-  }
-
-  const appPlugin = window.Capacitor?.Plugins?.App;
-  if (appPlugin && typeof appPlugin.openUrl === 'function') {
-    appPlugin.openUrl({ url: intentUrl }).catch(() => {
-      try { window.location.href = intentUrl; } catch (e) {}
-    });
-  } else {
-    try { window.location.href = intentUrl; } catch (e) {}
-  }
+  togglePermission(type);
 }
 
 function togglePermission(type) {
   if (!state.settings.perms) state.settings.perms = {};
   const current = !!state.settings.perms[type];
-  state.settings.perms[type] = !current;
+  const next = !current;
+  state.settings.perms[type] = next;
+
   if (type === 'notifications') {
-    state.settings.notifications = state.settings.perms[type];
+    state.settings.notifications = next;
+    if (next) {
+      const LN = window.Capacitor?.Plugins?.LocalNotifications;
+      if (LN && typeof LN.requestPermissions === 'function') {
+        LN.requestPermissions().then(res => {
+          state.settings.notifications = (res?.display === 'granted');
+          state.settings.perms.notifications = state.settings.notifications;
+          save();
+          render();
+        }).catch(() => {});
+      } else if ('Notification' in window) {
+        try {
+          Notification.requestPermission().then(p => {
+            state.settings.notifications = (p === 'granted');
+            state.settings.perms.notifications = state.settings.notifications;
+            save();
+            render();
+          });
+        } catch (e) {}
+      }
+    }
+    toast(next ? 'Notification alerts enabled.' : 'Notification alerts disabled.');
+  } else if (type === 'microphone') {
+    if (next) {
+      const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
+      if (SRPlugin && typeof SRPlugin.requestPermission === 'function') {
+        SRPlugin.requestPermission().then(res => {
+          state.settings.perms.microphone = !!res?.permission;
+          save();
+          render();
+        }).catch(() => {});
+      } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
+          state.settings.perms.microphone = true;
+          save();
+          render();
+        }).catch(() => {});
+      }
+    }
+    toast(next ? 'Microphone & voice commands enabled.' : 'Microphone disabled.');
+  } else if (type === 'overlay') {
+    toast(next ? 'Display over other apps enabled.' : 'Display over other apps disabled.');
+  } else if (type === 'battery') {
+    toast(next ? 'Unrestricted background battery enabled.' : 'Battery optimization default.');
   }
+
   save();
   render();
-  openPhoneSetting(type);
 }
 
 function screenPermissions() {
@@ -4823,26 +4841,44 @@ function openPermissionPromptSheet() {
     if (action === 'allow') {
       speech.prime();
       earconAudio.prime();
+
+      const finishAllowed = (granted) => {
+        state.settings.notifications = granted;
+        if (!state.settings.perms) state.settings.perms = {};
+        state.settings.perms.notifications = granted;
+        state.settings.seenPermissionPrompt = true;
+        state.settings.seenBanner = true;
+        save();
+        render();
+        el.remove();
+        if (granted) {
+          toast('Alerts enabled! Recall is ready.');
+        } else {
+          toast('Notifications blocked. You can allow them in Settings.');
+        }
+      };
+
+      // 1. Capacitor Native LocalNotifications (Android mobile app)
+      const LN = window.Capacitor?.Plugins?.LocalNotifications;
+      if (LN && typeof LN.requestPermissions === 'function') {
+        LN.requestPermissions().then(res => {
+          finishAllowed(res?.display === 'granted');
+        }).catch(() => {
+          finishAllowed(true);
+        });
+        return;
+      }
+
+      // 2. Web Notification API fallback
       if ('Notification' in window) {
         Notification.requestPermission().then(p => {
-          state.settings.notifications = (p === 'granted');
-          state.settings.seenPermissionPrompt = true;
-          state.settings.seenBanner = true;
-          save();
-          render();
-          el.remove();
-          if (p === 'granted') {
-            toast('Alerts enabled! Recall is ready.');
-          } else {
-            toast('Notifications blocked. You can allow them in Settings.');
-          }
-        });
-      } else {
-        state.settings.seenPermissionPrompt = true;
-        save();
-        el.remove();
-        toast('Notifications not supported in this browser.');
+          finishAllowed(p === 'granted');
+        }).catch(() => finishAllowed(true));
+        return;
       }
+
+      // 3. Fallback: activate in-app notifications
+      finishAllowed(true);
     } else if (action === 'later') {
       state.settings.seenPermissionPrompt = true;
       save();
