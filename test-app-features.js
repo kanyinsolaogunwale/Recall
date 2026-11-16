@@ -502,6 +502,23 @@ if (appJs.includes('Time to ${f}. Let\'s get it done.')) {
 }
 console.log('  ✓ Hands-free voice listener safety verified: never self-triggers, rejects false-positives ("check", "got it"), and defers listening until after TTS');
 
+// 32. Test Reminder Details Screen Side-by-Side Action Buttons
+if (!appJs.includes('data-action="hear-reminder"') || !appJs.includes('data-action="confirm-delete"')) {
+  throw new Error('Missing action buttons in screenDetails');
+}
+const detailsActionRowMatch = appJs.match(/<div class="detail-actions"[\s\S]*?<div style="display:flex;gap:10px;align-items:center;">[\s\S]*?data-action="hear-reminder"[\s\S]*?data-action="confirm-delete"/);
+if (!detailsActionRowMatch) {
+  throw new Error('Hear reminder and Delete reminder buttons should be aligned horizontally side-by-side in screenDetails');
+}
+console.log('  ✓ Reminder details screen "Hear reminder" and "Delete reminder" buttons aligned side-by-side horizontally');
+
+// 33. Test APK build artifact renamed to Recall.apk
+const workflowYml = fs.readFileSync(path.join(__dirname, '.github/workflows/build-apk.yml'), 'utf8');
+if (!workflowYml.includes('path: Recall.apk')) {
+  throw new Error('build-apk.yml does not upload Recall.apk as artifact path');
+}
+console.log('  ✓ GitHub Actions build workflow configured to produce Recall.apk');
+
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {
   throw new Error('speech.dueLine still receives lowercased r.task, which corrupts proper nouns');

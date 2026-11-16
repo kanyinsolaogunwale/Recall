@@ -109,7 +109,20 @@ def patch_colors():
         f.write(content)
     print("Patched colors.xml ic_launcher_background.")
 
+def patch_gradle():
+    gradle_path = os.path.join('android', 'app', 'build.gradle')
+    if not os.path.exists(gradle_path):
+        return
+    with open(gradle_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    if 'archivesBaseName' not in content:
+        content = re.sub(r'(defaultConfig\s*\{)', r'\1\n        setProperty("archivesBaseName", "Recall")', content, count=1)
+        with open(gradle_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        print("Patched build.gradle archivesBaseName to Recall.")
+
 if __name__ == '__main__':
     generate_icons()
     patch_manifest()
     patch_colors()
+    patch_gradle()

@@ -3718,15 +3718,15 @@ function screenDetails(id) {
             </div>
           </div>
         ` : ''}
-        <div class="detail-actions">
-          <button class="btn primary" data-action="hear-reminder" data-id="${r.id}">${r.voiceClip ? T('playVoiceNote') : T('hearReminder')}</button>
-          ${isMissed ? `<button class="btn primary" data-action="remind-again" data-id="${r.id}">${T('remindAgain')}</button>` : ''}
-          ${isMissed ? `<div style="display:flex;gap:10px;">
+        <div class="detail-actions" style="margin-top:24px;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn primary" style="flex:1;height:52px;min-height:52px;font-size:15px;font-weight:700;padding:0 8px;white-space:nowrap;" data-action="hear-reminder" data-id="${r.id}">${r.voiceClip ? T('playVoiceNote') : T('hearReminder')}</button>
+            <button class="btn outline" style="flex:1;height:52px;min-height:52px;font-size:15px;font-weight:600;padding:0 8px;white-space:nowrap;" data-action="confirm-delete" data-id="${r.id}" data-btn="delete">${T('deleteReminder')}</button>
+          </div>
+          ${isMissed ? `<button class="btn primary" style="margin-top:10px;" data-action="remind-again" data-id="${r.id}">${T('remindAgain')}</button>` : ''}
+          ${isMissed ? `<div style="display:flex;gap:10px;margin-top:10px;">
             <button class="btn outline" data-action="not-today" data-id="${r.id}">${T('notToday')}</button>
             <button class="btn primary" data-action="complete" data-id="${r.id}">${T('done')}</button></div>` : ''}
-        </div>
-        <div style="margin-top:22px;">
-          <button class="btn outline" data-action="confirm-delete" data-id="${r.id}" data-btn="delete">${T('deleteReminder')}</button>
         </div>
       </div>
     </div>` };
