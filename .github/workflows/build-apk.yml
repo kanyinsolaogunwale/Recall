@@ -38,14 +38,14 @@ jobs:
       - name: Generate Android Native Project
         run: |
           npx cap add android || true
-          python scripts/prepare-android.py
           npx cap sync android
+          python scripts/prepare-android.py
 
       - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
