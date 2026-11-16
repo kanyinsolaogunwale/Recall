@@ -481,7 +481,19 @@ const UI_STRINGS = {
     theme_paper: 'Linen',
     theme_carbon: 'Onyx',
     detected: 'Detected',
-    tapToApply: 'Tap to apply'
+    tapToApply: 'Tap to apply',
+    permissions: 'Permissions',
+    permDesc: 'Enable permissions to let Recall alert you on time, listen hands-free, and stay active in the background.',
+    permNotifications: 'Notification alerts',
+    permNotificationsSub: 'Rings, chimes, and banners when your reminders are due',
+    permMic: 'Microphone & voice commands',
+    permMicSub: 'Voice typing and hands-free spoken actions (Done, Snooze)',
+    permOverlay: 'Display over other apps',
+    permOverlaySub: 'Shows full-screen reminder takeovers when due',
+    permBattery: 'Unrestricted battery',
+    permBatterySub: 'Keeps reminders and focus timers reliable in background',
+    manage: 'Manage',
+    openingSettings: 'Opening phone settings...'
   },
   es: {
     home: 'Inicio',
@@ -685,7 +697,19 @@ const UI_STRINGS = {
     theme_paper: 'Lino',
     theme_carbon: 'Ónix',
     detected: 'Detectado',
-    tapToApply: 'Toca para aplicar'
+    tapToApply: 'Toca para aplicar',
+    permissions: 'Permisos',
+    permDesc: 'Activa los permisos para que Recall te avise a tiempo, escuche con manos libres y siga activo en segundo plano.',
+    permNotifications: 'Alertas de notificación',
+    permNotificationsSub: 'Sonidos, timbres y avisos cuando vencen tus recordatorios',
+    permMic: 'Micrófono y comandos de voz',
+    permMicSub: 'Dictado por voz y acciones con manos libres (Hecho, Posponer)',
+    permOverlay: 'Mostrar sobre otras aplicaciones',
+    permOverlaySub: 'Muestra recordatorios a pantalla completa al vencer',
+    permBattery: 'Batería sin restricciones',
+    permBatterySub: 'Mantiene recordatorios y temporizadores confiables en segundo plano',
+    manage: 'Gestionar',
+    openingSettings: 'Abriendo ajustes del teléfono...'
   },
   fr: {
     home: 'Accueil',
@@ -889,7 +913,19 @@ const UI_STRINGS = {
     theme_paper: 'Lin',
     theme_carbon: 'Onyx',
     detected: 'Détecté',
-    tapToApply: 'Appuyez pour appliquer'
+    tapToApply: 'Appuyez pour appliquer',
+    permissions: 'Autorisations',
+    permDesc: 'Activez les autorisations pour permettre à Recall de vous alerter à temps, d’écouter les commandes et de rester actif.',
+    permNotifications: 'Alertes de notification',
+    permNotificationsSub: 'Sons, carillons et bannières quand vos rappels arrivent à échéance',
+    permMic: 'Microphone et commandes vocales',
+    permMicSub: 'Dictée vocale et actions mains libres (Fait, Répéter)',
+    permOverlay: 'Afficher par-dessus d’autres applications',
+    permOverlaySub: 'Affiche les rappels en plein écran au moment voulu',
+    permBattery: 'Batterie sans restriction',
+    permBatterySub: 'Garde les rappels et minuteurs fiables en arrière-plan',
+    manage: 'Gérer',
+    openingSettings: 'Ouverture des paramètres du téléphone...'
   },
   de: {
     home: 'Start',
@@ -1093,7 +1129,19 @@ const UI_STRINGS = {
     theme_paper: 'Leinen',
     theme_carbon: 'Onyx',
     detected: 'Erkannt',
-    tapToApply: 'Tippen zum Anwenden'
+    tapToApply: 'Tippen zum Anwenden',
+    permissions: 'Berechtigungen',
+    permDesc: 'Aktivieren Sie Berechtigungen, damit Recall Sie pünktlich erinnert, per Sprache gesteuert werden kann und im Hintergrund aktiv bleibt.',
+    permNotifications: 'Benachrichtigungsalarme',
+    permNotificationsSub: 'Töne, Klänge und Banner, wenn Ihre Erinnerungen fällig sind',
+    permMic: 'Mikrofon & Sprachbefehle',
+    permMicSub: 'Spracheingabe und freihändige Aktionen (Erledigt, Schlummern)',
+    permOverlay: 'Über anderen Apps anzeigen',
+    permOverlaySub: 'Zeigt Vollbild-Erinnerungen an, wenn sie fällig sind',
+    permBattery: 'Uneingeschränkte Akkunutzung',
+    permBatterySub: 'Hält Erinnerungen und Fokus-Timer im Hintergrund zuverlässig',
+    manage: 'Verwalten',
+    openingSettings: 'Telefoneinstellungen werden geöffnet...'
   },
   pt: {
     home: 'Início',
@@ -1297,7 +1345,19 @@ const UI_STRINGS = {
     theme_paper: 'Linho',
     theme_carbon: 'Ônix',
     detected: 'Detectado',
-    tapToApply: 'Toque para aplicar'
+    tapToApply: 'Toque para aplicar',
+    permissions: 'Permissões',
+    permDesc: 'Ative as permissões para que o Recall alerte no horário, ouça comandos por voz e continue ativo em segundo plano.',
+    permNotifications: 'Alertas de notificação',
+    permNotificationsSub: 'Sons, toques e avisos quando seus lembretes chegarem',
+    permMic: 'Microfone e comandos de voz',
+    permMicSub: 'Digitação por voz e ações com mãos livres (Feito, Adiar)',
+    permOverlay: 'Exibir sobre outros aplicativos',
+    permOverlaySub: 'Exibe lembretes em tela cheia quando vencerem',
+    permBattery: 'Bateria irrestrita',
+    permBatterySub: 'Mantém lembretes e timers de foco confiáveis em segundo plano',
+    manage: 'Gerenciar',
+    openingSettings: 'Abrindo configurações do celular...'
   }
 };
 
@@ -1827,7 +1887,15 @@ const speech = {
   stop() {
     this.run++;
     try {
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      const capTTS = window.Capacitor?.Plugins?.TextToSpeech;
+      if (capTTS && typeof capTTS.stop === 'function') {
+        capTTS.stop().catch(() => {});
+      }
+    } catch (e) {}
+    try {
+      if ('speechSynthesis' in window && speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
     } catch (e) {}
   },
   say(text, force, onEnd) {
@@ -1841,7 +1909,6 @@ const speech = {
       const v = this.current();
       const langTag = LANG_BCP[this.lang()] || 'en-US';
       const run = ++this.run;
-      speechSynthesis.cancel();
       
       let finished = false;
       const finishOnce = () => {
@@ -1856,6 +1923,33 @@ const speech = {
         return true;
       }
 
+      // Check if native Capacitor TextToSpeech is available (Android app)
+      const capTTS = window.Capacitor?.Plugins?.TextToSpeech;
+      if (capTTS && typeof capTTS.speak === 'function') {
+        capTTS.speak({
+          text: cleanText,
+          lang: langTag,
+          rate: baseRate,
+          pitch: basePitch,
+          volume: 1.0,
+          category: 'ambient',
+        }).then(() => finishOnce()).catch(() => {
+          this.speakWeb(cleanText, v, langTag, baseRate, basePitch, run, finishOnce);
+        });
+        return true;
+      }
+
+      return this.speakWeb(cleanText, v, langTag, baseRate, basePitch, run, finishOnce);
+    } catch (e) {
+      if (typeof onEnd === 'function') onEnd();
+    }
+    return true;
+  },
+  speakWeb(cleanText, v, langTag, baseRate, basePitch, run, finishOnce) {
+    try {
+      if ('speechSynthesis' in window && speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
       const u = new SpeechSynthesisUtterance(cleanText);
       u.lang = (v && v.lang) ? v.lang : langTag;
       if (v) u.voice = v;
@@ -1866,7 +1960,7 @@ const speech = {
       u.onend = finishOnce;
       u.onerror = finishOnce;
 
-      const delayMs = IS_IOS ? 160 : 110;
+      const delayMs = IS_IOS ? 160 : 70;
       setTimeout(() => {
         if (run !== this.run) return;
         try {
@@ -1885,10 +1979,10 @@ const speech = {
       }, estDurationMs);
 
       if (IS_IOS && !this.voices.length) setTimeout(() => {
-        if (run === this.run && this.refresh().length) this.say(text, force, onEnd);
+        if (run === this.run && this.refresh().length) this.say(cleanText, true, finishOnce);
       }, 700);
     } catch (e) {
-      if (typeof onEnd === 'function') onEnd();
+      finishOnce();
     }
     return true;
   }
@@ -2589,38 +2683,89 @@ function parseSnoozeCommand(rawText) {
 }
 
 let activeVoiceRec = null;
+let activePluginListening = false;
+
+function handleVoiceActionCommand(text, r) {
+  if (!text) return;
+  const t = text.toLowerCase().trim();
+  
+  if (/\b(done|finish|finished|completed|check|did it|got it|listo|hecho|terminado|fait|terminé|erledigt|fertig|feito|pronto)\b/.test(t)) {
+    stopActiveVoiceListener();
+    completeReminder(r.id);
+    speech.say(`Checked off hands-free. Great work!`, true);
+  } else if (/\b(not today|skip|cancel|hoy no|saltar|cancelar|pas aujourd'hui|ignorer|annuler|nicht heute|überspringen|abbrechen|hoje n[aã]o|pular)\b/.test(t)) {
+    stopActiveVoiceListener();
+    notToday(r.id);
+    speech.say(`Moved to tomorrow.`, true);
+  } else {
+    const snoozeCmd = parseSnoozeCommand(t);
+    if (snoozeCmd) {
+      stopActiveVoiceListener();
+      snoozeReminder(r.id, snoozeCmd.ms, snoozeCmd.label);
+      speech.say(snoozeCmd.speech, true);
+    }
+  }
+}
+
 function startActiveVoiceListener(r) {
+  stopActiveVoiceListener();
+
+  // Try Capacitor native SpeechRecognition plugin first (Android native)
+  const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
+  if (SRPlugin && typeof SRPlugin.start === 'function') {
+    activePluginListening = true;
+    const startNativePlugin = () => {
+      if (!activePluginListening) return;
+      try {
+        SRPlugin.start({
+          language: LANG_BCP[state.settings.lang] || 'en-US',
+          maxResults: 3,
+          prompt: 'Say Done, Snooze, or Not today',
+          partialResults: true,
+          popup: false,
+        }).catch(() => {});
+
+        SRPlugin.removeAllListeners?.();
+        SRPlugin.addListener?.('partialResults', data => {
+          if (!activePluginListening) return;
+          if (data && data.matches && data.matches.length) {
+            handleVoiceActionCommand(data.matches[0], r);
+          }
+        });
+      } catch (e) {}
+    };
+
+    if (typeof SRPlugin.hasPermission === 'function') {
+      SRPlugin.hasPermission().then(res => {
+        if (!res.permission && typeof SRPlugin.requestPermission === 'function') {
+          SRPlugin.requestPermission().then(req => {
+            if (req.permission) startNativePlugin();
+          }).catch(() => {});
+        } else {
+          startNativePlugin();
+        }
+      }).catch(() => startNativePlugin());
+    } else {
+      startNativePlugin();
+    }
+    return;
+  }
+
+  // Fallback to Web Speech API
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
-  stopActiveVoiceListener();
   try {
     const rec = new SR();
     activeVoiceRec = rec;
     rec.continuous = true;
     rec.interimResults = false;
-    rec.lang = 'en-US';
+    rec.lang = LANG_BCP[state.settings.lang] || 'en-US';
 
     rec.onresult = e => {
       const last = e.results[e.results.length - 1];
       if (!last || !last[0]) return;
       const text = (last[0].transcript || '').toLowerCase().trim();
-      
-      if (/\b(done|finish|finished|completed|check|did it|got it)\b/.test(text)) {
-        stopActiveVoiceListener();
-        completeReminder(r.id);
-        speech.say(`Checked off hands-free. Great work!`, true);
-      } else if (/\b(not today|skip|cancel)\b/.test(text)) {
-        stopActiveVoiceListener();
-        notToday(r.id);
-        speech.say(`Moved to tomorrow.`, true);
-      } else {
-        const snoozeCmd = parseSnoozeCommand(text);
-        if (snoozeCmd) {
-          stopActiveVoiceListener();
-          snoozeReminder(r.id, snoozeCmd.ms, snoozeCmd.label);
-          speech.say(snoozeCmd.speech, true);
-        }
-      }
+      handleVoiceActionCommand(text, r);
     };
     rec.onerror = () => { stopActiveVoiceListener(); };
     rec.onend = () => {
@@ -2633,6 +2778,14 @@ function startActiveVoiceListener(r) {
 }
 
 function stopActiveVoiceListener() {
+  activePluginListening = false;
+  const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
+  if (SRPlugin) {
+    try {
+      if (typeof SRPlugin.stop === 'function') SRPlugin.stop().catch(() => {});
+      SRPlugin.removeAllListeners?.();
+    } catch (e) {}
+  }
   if (activeVoiceRec) {
     try { activeVoiceRec.onend = null; activeVoiceRec.stop(); } catch (e) {}
     activeVoiceRec = null;
@@ -3180,13 +3333,13 @@ function screenFocus() {
         <div style="margin-top:24px;">
           ${isRunning ? `
             <div style="display:flex;gap:10px;">
-              <button class="btn ghost" style="flex:1;" data-action="focus-stop">${T('endFocusSession')}</button>
-              <button class="btn primary" style="flex:2;" data-action="focus-pause">${I.pause(16)} <span style="margin-left:6px;">${T('pause')}</span></button>
+              <button class="btn ghost" style="flex:1;height:52px;font-size:15px;display:flex;align-items:center;justify-content:center;" data-action="focus-stop">${T('endFocusSession')}</button>
+              <button class="btn primary" style="flex:1;height:52px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px;" data-action="focus-pause">${I.pause(16)} <span>${T('pause')}</span></button>
             </div>
           ` : isPaused ? `
             <div style="display:flex;gap:10px;">
-              <button class="btn ghost" style="flex:1;" data-action="focus-stop">${T('endFocusSession')}</button>
-              <button class="btn primary" style="flex:2;" data-action="focus-resume">${I.play(16)} <span style="margin-left:6px;">${T('resume')}</span></button>
+              <button class="btn ghost" style="flex:1;height:52px;font-size:15px;display:flex;align-items:center;justify-content:center;" data-action="focus-stop">${T('endFocusSession')}</button>
+              <button class="btn primary" style="flex:1;height:52px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px;" data-action="focus-resume">${I.play(16)} <span>${T('resume')}</span></button>
             </div>
           ` : `
             <button class="btn primary" data-action="focus-start" style="width:100%;height:52px;font-size:16px;">${T('startFocusSession')}</button>
@@ -3470,7 +3623,7 @@ function screenWeek() {
           </div>
           ${T('mindfulMomentumDesc')}
         </div>
-        <button class="btn outline mt-24" data-action="hear-week-reflection" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;">
+        <button class="btn primary mt-24" data-action="hear-week-reflection" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;">
           ${isPlayingWeekReflection ? I.pause(16) : I.play(16)}<span>${isPlayingWeekReflection ? T('pauseReflection') : T('hearReflection')}</span>
         </button>
       </div>
@@ -3496,8 +3649,7 @@ function screenSettings() {
         <div class="settings-row" data-action="go-voice" role="button"><span class="label">${T('voice')}</span><span class="row-end"><span class="value">${esc(speech.voiceLabel())}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="go-theme" role="button"><span class="label">${T('theme')}</span><span class="row-end"><span class="value">${themeLabel(s.theme || 'light')}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="open-language" role="button"><span class="label">${T('language')}</span><span class="row-end"><span class="value">${LANGUAGES[s.lang || 'en'] || 'English'}</span>${I.arrow(15)}</span></div>
-        <div class="settings-row"><span class="label">${T('notificationAlerts')}</span><button class="toggle ${s.notifications ? 'on' : ''}" data-action="toggle-notifications" aria-label="${T('notificationAlerts')}"><span class="knob"></span></button></div>
-        <div class="settings-row" data-action="go-permissions" role="button"><span class="label">${T('alertsPermissions')}</span><span class="row-end"><span class="value">${s.notifications ? T('allowed') : T('howToAllow')}</span>${I.arrow(15)}</span></div>
+        <div class="settings-row" data-action="go-permissions" role="button"><span class="label">${T('permissions')}</span><span class="row-end"><span class="value">${T('manage')}</span>${I.arrow(15)}</span></div>
         <div class="settings-row" data-action="go-about" role="button"><span class="label">${T('aboutRecall')}</span><span class="row-end"><span class="value">${I.arrow(15)}</span></span></div>
       </div>
     </div>` };
@@ -3687,73 +3839,100 @@ function screenAbout() {
 }
 
 /* ============================================================
-   SCREEN: ALERTS & PHONE PERMISSIONS (dedicated page)
+   SCREEN: PERMISSIONS (dedicated page with direct setting toggles)
    ============================================================ */
-function screenPermissions() {
-  const perm = (typeof window !== 'undefined' && 'Notification' in window) ? Notification.permission : 'unsupported';
-  const isGranted = perm === 'granted';
-  const isDenied = perm === 'denied';
-
-  let statusBadge = '';
-  if (isGranted) {
-    statusBadge = `<span style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;font-weight:700;font-size:12.5px;"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a;"></span> ${T('allowedActive')}</span>`;
-  } else if (isDenied) {
-    statusBadge = `<span style="display:inline-flex;align-items:center;gap:6px;color:#dc2626;font-weight:700;font-size:12.5px;"><span style="width:7px;height:7px;border-radius:50%;background:#dc2626;"></span> ${T('blockedByBrowser')}</span>`;
-  } else {
-    statusBadge = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--ink-60);font-weight:700;font-size:12.5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--ink-40);"></span> ${T('notEnabled')}</span>`;
+function openPhoneSetting(type) {
+  toast(T('openingSettings') || 'Opening phone settings...');
+  const pkg = 'com.recall.app';
+  let intentUrl = '';
+  if (type === 'notifications') {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      try { Notification.requestPermission(); } catch (e) {}
+    }
+    intentUrl = `intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=${pkg};end`;
+  } else if (type === 'microphone') {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {});
+    }
+    const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
+    if (SRPlugin && typeof SRPlugin.requestPermission === 'function') {
+      try { SRPlugin.requestPermission(); } catch (e) {}
+    }
+    intentUrl = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=${pkg};data=package:${pkg};end`;
+  } else if (type === 'overlay') {
+    intentUrl = `intent:#Intent;action=android.settings.action.MANAGE_OVERLAY_PERMISSION;package=${pkg};data=package:${pkg};end`;
+  } else if (type === 'battery') {
+    intentUrl = `intent:#Intent;action=android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS;package=${pkg};end`;
   }
+
+  const appPlugin = window.Capacitor?.Plugins?.App;
+  if (appPlugin && typeof appPlugin.openUrl === 'function') {
+    appPlugin.openUrl({ url: intentUrl }).catch(() => {
+      try { window.location.href = intentUrl; } catch (e) {}
+    });
+  } else {
+    try { window.location.href = intentUrl; } catch (e) {}
+  }
+}
+
+function togglePermission(type) {
+  if (!state.settings.perms) state.settings.perms = {};
+  const current = !!state.settings.perms[type];
+  state.settings.perms[type] = !current;
+  if (type === 'notifications') {
+    state.settings.notifications = state.settings.perms[type];
+  }
+  save();
+  render();
+  openPhoneSetting(type);
+}
+
+function screenPermissions() {
+  const p = state.settings.perms || {};
+  const isNotifGranted = (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted');
+  const notifActive = isNotifGranted || !!p.notifications;
+  const micActive = !!p.microphone;
+  const overlayActive = !!p.overlay;
+  const batteryActive = !!p.battery;
+
+  const permRow = (key, iconSvg, title, subtitle, active) => `
+    <div class="settings-row" style="padding:15px 14px;border-radius:14px;background:var(--surface);margin-bottom:12px;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;" data-action="toggle-perm" data-perm="${key}" role="button">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+        <span style="color:var(--accent);display:inline-flex;align-items:center;margin-top:2px;flex-shrink:0;">${iconSvg}</span>
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:15px;color:var(--ink);">${title}</div>
+          <div style="font-size:12.5px;color:var(--ink-50);margin-top:3px;line-height:1.4;">${subtitle}</div>
+        </div>
+      </div>
+      <button class="toggle ${active ? 'on' : ''}" data-action="toggle-perm" data-perm="${key}" aria-label="${title}" style="flex-shrink:0;">
+        <span class="knob"></span>
+      </button>
+    </div>
+  `;
 
   return { label: 'permissions', html: `
     <div class="screen" data-screen="permissions">
       <div class="app-header">
         <button class="round-btn" data-action="back" aria-label="Back">${I.back(18)}</button>
-        <span class="screen-title">${T('alertsPermissions')}</span>
+        <span class="screen-title">${T('permissions')}</span>
         <span class="header-spacer"></span>
       </div>
-      <div class="screen-scroll" style="padding-top:8px;padding-bottom:40px;">
-        <div style="font-size:13.5px;color:var(--ink-60);margin-bottom:16px;line-height:1.5;">${T('alertsPermissionsDesc')}</div>
-
-        <!-- Live status card -->
-        <div style="background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px;margin-bottom:18px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="font-size:14px;font-weight:700;color:var(--ink);">${T('phoneStatus')}</span>
-            ${statusBadge}
-          </div>
-          <div style="display:flex;gap:10px;">
-            ${!isGranted ? `<button class="btn primary" data-action="perm-allow-now" style="flex:1;font-size:13.5px;padding:10px 14px;">${T('allowAlertsNow')}</button>` : ''}
-            <button class="btn ghost" data-action="perm-test-alert" style="flex:1;font-size:13.5px;padding:10px 14px;border:1px solid var(--line-soft);">${isGranted ? T('sendTestReminder') : T('testSoundVoice')}</button>
-          </div>
+      <div class="screen-scroll" style="padding-top:12px;padding-bottom:40px;">
+        <div style="font-size:13.5px;color:var(--ink-60);margin-bottom:20px;line-height:1.5;padding:0 2px;">
+          ${T('permDesc')}
         </div>
 
-        <!-- Manual instructions -->
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-40);margin:18px 0 10px;">
-          ${T('howToAllowAndDraw')}
+        <div style="display:flex;flex-direction:column;">
+          ${permRow('notifications', I.bell(20), T('permNotifications'), T('permNotificationsSub'), notifActive)}
+          ${permRow('microphone', I.mic(20), T('permMic'), T('permMicSub'), micActive)}
+          ${permRow('overlay', I.sparkle(20), T('permOverlay'), T('permOverlaySub'), overlayActive)}
+          ${permRow('battery', I.focus(20, true), T('permBattery'), T('permBatterySub'), batteryActive)}
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.55;color:var(--ink);">
-          <!-- Android -->
-          <div style="background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px;">
-            <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--ink);display:flex;align-items:center;gap:6px;">
-              <span>📱 ${T('androidPermHeading')}</span>
-            </div>
-            <ol style="margin:0;padding-left:18px;color:var(--ink-80, var(--ink));">
-              <li style="margin-bottom:6px;"><strong>${T('ifPromptMissed')}</strong>: ${T('androidStep1')}</li>
-              <li style="margin-bottom:6px;"><strong>${T('displayOverApps')}</strong>: ${T('androidStep2')}</li>
-              <li><strong>${T('neverMissAlerts')}</strong>: ${T('androidStep3')}</li>
-            </ol>
-          </div>
-
-          <!-- iPhone -->
-          <div style="background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px;">
-            <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--ink);display:flex;align-items:center;gap:6px;">
-              <span>🍏 ${T('iosPermHeading')}</span>
-            </div>
-            <ol style="margin:0;padding-left:18px;color:var(--ink-80, var(--ink));">
-              <li style="margin-bottom:6px;">${T('iosStep1')}</li>
-              <li style="margin-bottom:6px;">${T('iosStep2')}</li>
-              <li><strong>${T('addToHomeScreen')}</strong>: ${T('iosStep3')}</li>
-            </ol>
-          </div>
+        <div style="margin-top:16px;">
+          <button class="btn ghost" data-action="perm-test-alert" style="width:100%;height:48px;font-size:14px;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;gap:8px;">
+            ${I.play(16)}<span>${T('testSoundVoice')}</span>
+          </button>
         </div>
       </div>
     </div>` };
@@ -3941,10 +4120,10 @@ function screenActive(r) {
           <span>${T('listeningBadge')}</span>
         </div>
         <div class="active-actions" style="margin-top:20px;">
-          <button class="btn primary" data-action="complete" data-id="${r.id}">${T('done')}</button>
           <div style="display:flex;gap:10px;">
-            <button class="btn outline" data-action="snooze" data-id="${r.id}">${T('snooze')}</button>
-            <button class="btn outline" data-action="not-today" data-id="${r.id}">${T('notToday')}</button>
+            <button class="btn primary" style="flex:1;height:52px;font-size:15px;font-weight:700;" data-action="complete" data-id="${r.id}">${T('done')}</button>
+            <button class="btn outline" style="flex:1;height:52px;font-size:15px;font-weight:600;" data-action="snooze" data-id="${r.id}">${T('snooze')}</button>
+            <button class="btn outline" style="flex:1;height:52px;font-size:15px;font-weight:600;" data-action="not-today" data-id="${r.id}">${T('notToday')}</button>
           </div>
         </div>
       </div>
@@ -4274,9 +4453,70 @@ function remindAgainSheet(id) {
 const DICT_LANGS = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR' };
 let dictation = null;
 function startDictation() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const btn = document.querySelector('.mic-btn');
   const input = $('#taskInput');
+
+  // Support Capacitor native speech recognition on Android
+  const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
+  if (SRPlugin && typeof SRPlugin.start === 'function') {
+    if (dictation) {
+      try {
+        if (typeof SRPlugin.stop === 'function') SRPlugin.stop().catch(() => {});
+        SRPlugin.removeAllListeners?.();
+      } catch (e) {}
+      if (btn) btn.classList.remove('listening');
+      dictation = null;
+      return;
+    }
+
+    const startNativeDictation = () => {
+      dictation = { base: (creating.task || '').trim() };
+      if (btn) btn.classList.add('listening');
+      toast('Listening… tap mic to finish.');
+      try {
+        SRPlugin.start({
+          language: DICT_LANGS[state.settings.lang] || 'en-US',
+          maxResults: 1,
+          partialResults: true,
+          popup: false,
+        }).catch(() => {
+          if (btn) btn.classList.remove('listening');
+          dictation = null;
+        });
+
+        SRPlugin.removeAllListeners?.();
+        SRPlugin.addListener?.('partialResults', data => {
+          if (!dictation) return;
+          if (data && data.matches && data.matches.length) {
+            const spoken = data.matches[0].trim();
+            const val = (dictation.base ? dictation.base + ' ' : '') + spoken;
+            if (input) input.value = val;
+            creating.task = val;
+          }
+        });
+      } catch (e) {
+        if (btn) btn.classList.remove('listening');
+        dictation = null;
+      }
+    };
+
+    if (typeof SRPlugin.hasPermission === 'function') {
+      SRPlugin.hasPermission().then(res => {
+        if (!res.permission && typeof SRPlugin.requestPermission === 'function') {
+          SRPlugin.requestPermission().then(req => {
+            if (req.permission) startNativeDictation();
+          }).catch(() => {});
+        } else {
+          startNativeDictation();
+        }
+      }).catch(() => startNativeDictation());
+    } else {
+      startNativeDictation();
+    }
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { toast("Voice typing isn't supported in this browser."); return; }
   if (dictation) { dictation.rec.stop(); return; }
   try {
@@ -4714,6 +4954,14 @@ screensEl.addEventListener('click', e => {
   else if (a === 'go-timing') go('timing');
   else if (a === 'go-about') go('about');
   else if (a === 'go-permissions' || a === 'open-permissions-guide') go('permissions');
+  else if (a === 'toggle-perm') {
+    const type = t.dataset.perm || t.closest('[data-perm]')?.dataset?.perm;
+    if (type) togglePermission(type);
+  }
+  else if (a === 'open-phone-perm') {
+    const type = t.dataset.perm || t.closest('[data-perm]')?.dataset?.perm;
+    if (type) openPhoneSetting(type);
+  }
   else if (a === 'perm-allow-now') {
     speech.prime();
     earconAudio.prime();

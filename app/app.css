@@ -30,7 +30,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
 html{height:100%;-webkit-text-size-adjust:100%;}
 /* the app owns the viewport — no page-level bouncing or pull-to-refresh */
-body{height:100%;overflow:hidden;overscroll-behavior:none;background:#E9E7E1;-webkit-user-select:none;user-select:none;}
+body{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg, #FAFAF7);-webkit-user-select:none;user-select:none;}
 button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;}
 input,textarea{-webkit-user-select:text;user-select:text;}
 input{font-family:inherit;outline:none;}
@@ -39,18 +39,20 @@ input{font-family:inherit;outline:none;}
 .settings-row[data-action], .reminder-row, .week-card, .wd-circle,
 .theme-card, .vp-card, [role="button"], .sheet-option, .dlg-toggle, .dlg-btn, .cal-day, .cal-arrow, .cal-year{cursor:pointer;}
 
-.stage{height:100%;display:flex;align-items:center;justify-content:center;}
+.stage{height:100%;width:100%;display:flex;align-items:center;justify-content:center;}
 .device{
   position:relative;
   width:100%;
-  max-width:402px;
+  max-width:100%;
+  height:100%;
   height:100dvh;
   background:var(--bg);
   color:var(--ink);
   overflow:hidden;
 }
-@media(min-height:940px) and (min-width:520px){
-  .device{height:874px;border-radius:36px;box-shadow:0 40px 80px -30px rgba(0,0,0,.35);}
+@media(min-width:680px) and (min-height:700px) and (hover:hover){
+  body{background:#E9E7E1;}
+  .device{max-width:420px;height:874px;border-radius:36px;box-shadow:0 40px 80px -30px rgba(0,0,0,.35);}
 }
 
 /* ---------- screens ---------- */
