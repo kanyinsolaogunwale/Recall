@@ -1377,6 +1377,82 @@ function T(key, ...args) {
   if (typeof val === 'function') return val(...args);
   return val !== undefined ? val : key;
 }
+function conversationalizeTask(task, lang = 'en') {
+  if (!task || typeof task !== 'string') return '';
+  let s = task.trim();
+  if (lang === 'en') {
+    const repls = [
+      [/\bmy\b/gi, m => m[0] === 'M' ? 'Your' : 'your'],
+      [/\bmine\b/gi, m => m[0] === 'M' ? 'Yours' : 'yours'],
+      [/\bmyself\b/gi, m => m[0] === 'M' ? 'Yourself' : 'yourself'],
+      [/\bour\b/gi, m => m[0] === 'O' ? 'Your' : 'your'],
+      [/\bours\b/gi, m => m[0] === 'O' ? 'Yours' : 'yours'],
+      [/\bourselves\b/gi, m => m[0] === 'O' ? 'Yourselves' : 'yourselves'],
+      [/\bme\b/gi, m => m[0] === 'M' ? 'You' : 'you'],
+      [/\bI'm\b/g, "You're"],
+      [/\bi'm\b/g, "you're"],
+      [/\bI've\b/g, "You've"],
+      [/\bi've\b/g, "you've"],
+      [/\bI'll\b/g, "You'll"],
+      [/\bi'll\b/g, "you'll"],
+      [/\bI'd\b/g, "You'd"],
+      [/\bi'd\b/g, "you'd"],
+      [/\bI\s+am\b/g, 'you are'],
+      [/\bi\s+am\b/g, 'you are'],
+      [/\bI\b/g, 'you'],
+    ];
+    for (const [pattern, replacement] of repls) s = s.replace(pattern, replacement);
+  } else if (lang === 'es') {
+    const repls = [
+      [/\bmi\b/gi, m => m[0] === 'M' ? 'Tu' : 'tu'],
+      [/\bmis\b/gi, m => m[0] === 'M' ? 'Tus' : 'tus'],
+      [/\bmío\b/gi, m => m[0] === 'M' ? 'Tuyo' : 'tuyo'],
+      [/\bmía\b/gi, m => m[0] === 'M' ? 'Tuya' : 'tuya'],
+      [/\bmíos\b/gi, m => m[0] === 'M' ? 'Tuyos' : 'tuyos'],
+      [/\bmías\b/gi, m => m[0] === 'M' ? 'Tuyas' : 'tuyas'],
+      [/\bconmigo\b/gi, m => m[0] === 'C' ? 'Contigo' : 'contigo'],
+      [/\b([a-záéíóúñ]+)me\b/gi, '$1te'],
+    ];
+    for (const [pattern, replacement] of repls) s = s.replace(pattern, replacement);
+  } else if (lang === 'fr') {
+    const repls = [
+      [/\bmon\b/gi, m => m[0] === 'M' ? 'Ton' : 'ton'],
+      [/\bma\b/gi, m => m[0] === 'M' ? 'Ta' : 'ta'],
+      [/\bmes\b/gi, m => m[0] === 'M' ? 'Tes' : 'tes'],
+      [/\bmoi\b/gi, m => m[0] === 'M' ? 'Toi' : 'toi'],
+      [/\bme\b/gi, m => m[0] === 'M' ? 'Te' : 'te'],
+      [/\bm'/gi, m => m[0] === 'M' ? "T'" : "t'"],
+      [/-moi\b/gi, '-toi'],
+    ];
+    for (const [pattern, replacement] of repls) s = s.replace(pattern, replacement);
+  } else if (lang === 'de') {
+    const repls = [
+      [/\bmein\b/gi, m => m[0] === 'M' ? 'Dein' : 'dein'],
+      [/\bmeine\b/gi, m => m[0] === 'M' ? 'Deine' : 'deine'],
+      [/\bmeinen\b/gi, m => m[0] === 'M' ? 'Deinen' : 'deinen'],
+      [/\bmeiner\b/gi, m => m[0] === 'M' ? 'Deiner' : 'deiner'],
+      [/\bmeinem\b/gi, m => m[0] === 'M' ? 'Deinem' : 'deinem'],
+      [/\bmeines\b/gi, m => m[0] === 'M' ? 'Deines' : 'deines'],
+      [/\bmich\b/gi, m => m[0] === 'M' ? 'Dich' : 'dich'],
+      [/\bmir\b/gi, m => m[0] === 'M' ? 'Dir' : 'dir'],
+    ];
+    for (const [pattern, replacement] of repls) s = s.replace(pattern, replacement);
+  } else if (lang === 'pt') {
+    const repls = [
+      [/\bmeu\b/gi, m => m[0] === 'M' ? 'Seu' : 'seu'],
+      [/\bminha\b/gi, m => m[0] === 'M' ? 'Sua' : 'sua'],
+      [/\bmeus\b/gi, m => m[0] === 'M' ? 'Seus' : 'seus'],
+      [/\bminhas\b/gi, m => m[0] === 'M' ? 'Suas' : 'suas'],
+      [/\bmim\b/gi, 'você'],
+      [/\bcomigo\b/gi, 'com você'],
+      [/\bme\b/gi, 'te'],
+      [/-me\b/gi, '-te'],
+    ];
+    for (const [pattern, replacement] of repls) s = s.replace(pattern, replacement);
+  }
+  return s;
+}
+
 function isActionVerbTask(task, lang = 'en') {
   if (!task || typeof task !== 'string') return false;
   const s = task.trim().toLowerCase();
@@ -1418,7 +1494,7 @@ const PERSONALITY_LINES = {
         const isAction = isActionVerbTask(task, lang);
         const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
         return isAction
-          ? `Steady now. It's ${t}. Time to focus on ${f}. Let's get it done.`
+          ? `Steady now. It's ${t}. Time to ${f}. Let's get it done.`
           : `Steady now. It's ${t}. Time for ${f}. Let's get it done.`;
       }
     },
@@ -1660,15 +1736,17 @@ const SPEECH_PHRASES = {
     pace: () => 'This is my pace at the moment. It suits me fine.',
     voiceOn: () => 'Voice reminders are on.',
     due: (t, task) => {
-      const isAction = isActionVerbTask(task, 'en');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'en');
+      const isAction = isActionVerbTask(c, 'en');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Hey, it's ${t}. Time to ${f}. It's time to get started.`
         : `Hey, it's ${t}. Reminder: ${f}. It's time to get started.`;
     },
     ping: task => {
-      const isAction = isActionVerbTask(task, 'en');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'en');
+      const isAction = isActionVerbTask(c, 'en');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Hey, you wanted to ${f}.`
         : `Hey, reminder for: ${f}.`;
@@ -1681,15 +1759,17 @@ const SPEECH_PHRASES = {
     pace: () => 'Este es mi ritmo en este momento. Me viene bien.',
     voiceOn: () => 'Los recordatorios de voz están activados.',
     due: (t, task) => {
-      const isAction = isActionVerbTask(task, 'es');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'es');
+      const isAction = isActionVerbTask(c, 'es');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Ey, son las ${t}. Momento de ${f}. Es hora de empezar.`
         : `Ey, son las ${t}. Recordatorio: ${f}. Es hora de empezar.`;
     },
     ping: task => {
-      const isAction = isActionVerbTask(task, 'es');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'es');
+      const isAction = isActionVerbTask(c, 'es');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Ey, querías ${f}.`
         : `Ey, tienes este recordatorio: ${f}.`;
@@ -1702,15 +1782,17 @@ const SPEECH_PHRASES = {
     pace: () => 'Voilà mon rythme en ce moment. Ça me convient.',
     voiceOn: () => 'Les rappels vocaux sont activés.',
     due: (t, task) => {
-      const isAction = isActionVerbTask(task, 'fr');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'fr');
+      const isAction = isActionVerbTask(c, 'fr');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Salut, il est ${t}. C’est l’heure de ${f}.`
         : `Salut, il est ${t}. Rappel : ${f}.`;
     },
     ping: task => {
-      const isAction = isActionVerbTask(task, 'fr');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'fr');
+      const isAction = isActionVerbTask(c, 'fr');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : task;
       return isAction
         ? `Salut, tu voulais ${f}.`
         : `Salut, tu as ce rappel : ${f}.`;
@@ -1723,16 +1805,18 @@ const SPEECH_PHRASES = {
     pace: () => 'Das ist mein Tempo im Moment. Passt gut für mich.',
     voiceOn: () => 'Sprach-Erinnerungen sind eingeschaltet.',
     due: (t, task) => {
-      const isAction = isActionVerbTask(task, 'de');
+      const c = conversationalizeTask(task, 'de');
+      const isAction = isActionVerbTask(c, 'de');
       return isAction
-        ? `Hi, es ist ${t}. Zeit für: ${task}. Zeit, loszulegen.`
-        : `Hi, es ist ${t}. Erinnerung: ${task}. Zeit, loszulegen.`;
+        ? `Hi, es ist ${t}. Zeit für: ${c}. Zeit, loszulegen.`
+        : `Hi, es ist ${t}. Erinnerung: ${c}. Zeit, loszulegen.`;
     },
     ping: task => {
-      const isAction = isActionVerbTask(task, 'de');
+      const c = conversationalizeTask(task, 'de');
+      const isAction = isActionVerbTask(c, 'de');
       return isAction
-        ? `Hi, du wolltest ${task}.`
-        : `Hi, hier ist deine Erinnerung für: ${task}.`;
+        ? `Hi, du wolltest ${c}.`
+        : `Hi, hier ist deine Erinnerung für: ${c}.`;
     },
     auditionTask: () => 'eine achtsame Pause einlegen',
   },
@@ -1742,15 +1826,17 @@ const SPEECH_PHRASES = {
     pace: () => 'Esse é o meu ritmo agora. Fica bom pra mim.',
     voiceOn: () => 'Os lembretes de voz estão ativados.',
     due: (t, task) => {
-      const isAction = isActionVerbTask(task, 'pt');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'pt');
+      const isAction = isActionVerbTask(c, 'pt');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Oi, são ${t}. Hora de ${f}. Hora de começar.`
         : `Oi, são ${t}. Lembrete: ${f}. Hora de começar.`;
     },
     ping: task => {
-      const isAction = isActionVerbTask(task, 'pt');
-      const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
+      const c = conversationalizeTask(task, 'pt');
+      const isAction = isActionVerbTask(c, 'pt');
+      const f = isAction ? c.charAt(0).toLowerCase() + c.slice(1) : c;
       return isAction
         ? `Oi, você queria ${f}.`
         : `Oi, você tem este lembrete: ${f}.`;
@@ -1770,7 +1856,13 @@ const speech = {
   personality() { return PERSONALITIES[state.settings.personality] || PERSONALITIES.warm; },
   lang() { return state.settings.lang || 'en'; },
   /* the spoken phrase for a key, in the user's chosen language */
-  t(key, a, b) { const p = SPEECH_PHRASES[this.lang()] || SPEECH_PHRASES.en; return p[key](a, b); },
+  t(key, a, b) {
+    const l = this.lang();
+    const p = SPEECH_PHRASES[l] || SPEECH_PHRASES.en;
+    if (key === 'ping') return p.ping(conversationalizeTask(a, l));
+    if (key === 'due') return p.due(a, conversationalizeTask(b, l));
+    return p[key](a, b);
+  },
   /* the line a personality speaks when it is picked — each one has its own
      wording, so the characters differ in rhythm even on a single-voice device */
   introLine() {
@@ -1785,9 +1877,10 @@ const speech = {
     const p = this.personality();
     const l = this.lang();
     const k = this.key();
-    if (PERSONALITY_LINES[l] && PERSONALITY_LINES[l][k]?.due) return PERSONALITY_LINES[l][k].due(t, task, l);
-    if (PERSONALITY_LINES.en && PERSONALITY_LINES.en[k]?.due) return PERSONALITY_LINES.en[k].due(t, task, 'en');
-    return this.t('due', t, task);
+    const spokenTask = conversationalizeTask(task, l);
+    if (PERSONALITY_LINES[l] && PERSONALITY_LINES[l][k]?.due) return PERSONALITY_LINES[l][k].due(t, spokenTask, l);
+    if (PERSONALITY_LINES.en && PERSONALITY_LINES.en[k]?.due) return PERSONALITY_LINES.en[k].due(t, spokenTask, 'en');
+    return this.t('due', t, spokenTask);
   },
   auditionDue() {
     const times = {

@@ -394,6 +394,42 @@ if (!appJs.includes('btn danger') || !appJs.includes('--danger-bg')) {
 console.log('  ✓ Auto theme is the default and dynamically tracks device theme');
 console.log('  ✓ Red delete icon illustration and primary danger button verified');
 
+// 30. Test Conversational Perspective Shift (1st person -> 2nd person)
+const convMatch = appJs.match(/function conversationalizeTask\([\s\S]*?\n\}/);
+if (!convMatch) throw new Error('Could not extract conversationalizeTask from app.js');
+const testConversationalize = new Function(`return (${convMatch[0]});`)();
+
+const convTests = [
+  { in: 'Call my babe', lang: 'en', out: 'Call your babe' },
+  { in: 'Pick up my prescription', lang: 'en', out: 'Pick up your prescription' },
+  { in: 'Help me with my chores', lang: 'en', out: 'Help you with your chores' },
+  { in: 'Take my vitamins', lang: 'en', out: 'Take your vitamins' },
+  { in: 'My workout', lang: 'en', out: 'Your workout' },
+  { in: 'Llamar a mi amor', lang: 'es', out: 'Llamar a tu amor' },
+  { in: 'Appeler ma copine', lang: 'fr', out: 'Appeler ta copine' },
+  { in: 'Ruf meine Mutter an', lang: 'de', out: 'Ruf deine Mutter an' },
+  { in: 'Ligar para minha mãe', lang: 'pt', out: 'Ligar para sua mãe' },
+];
+
+convTests.forEach(ct => {
+  const res = testConversationalize(ct.in, ct.lang);
+  if (res !== ct.out) {
+    throw new Error(`conversationalizeTask("${ct.in}", "${ct.lang}") = "${res}", expected "${ct.out}"`);
+  }
+});
+console.log('  ✓ Conversational perspective shift (1st person -> 2nd person) verified across 5 languages');
+
+// Check that speech phrases ping handles conversationalized speech
+const phrasesMatch = appJs.match(/const SPEECH_PHRASES = ({[\s\S]*?});\n\nconst speech/);
+if (!phrasesMatch) throw new Error('Could not extract SPEECH_PHRASES from app.js');
+const testSpeechPhrases = new Function('conversationalizeTask', 'isActionVerbTask', `return (${phrasesMatch[1]});`)(testConversationalize, testIsAction);
+
+const pingResult = testSpeechPhrases.en.ping('Call my babe');
+if (pingResult !== 'Hey, you wanted to call your babe.') {
+  throw new Error(`testSpeechPhrases.en.ping("Call my babe") returned "${pingResult}", expected "Hey, you wanted to call your babe."`);
+}
+console.log('  ✓ Spoken reminder ping properly says: "Hey, you wanted to call your babe."');
+
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {
   throw new Error('speech.dueLine still receives lowercased r.task, which corrupts proper nouns');
