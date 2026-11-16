@@ -74,13 +74,13 @@ if (!appCss.includes('.bnav-ic-outline')) throw new Error('Missing .bnav-ic-outl
 if (!appCss.includes('calc(14px + env(safe-area-inset-bottom, 0px))')) throw new Error('Missing safe bottom padding in app.css');
 if (!appCss.includes('.bnav-add-btn svg')) throw new Error('Missing .bnav-add-btn svg rule in app.css');
 
-if (!appJs.includes("curName === 'voice' || curName === 'theme'")) {
-  throw new Error('Bottom nav is not hidden on voice and theme screens in app.js!');
+if (!appJs.includes("curName === 'details'") || !appJs.includes("curName === 'voice'") || !appJs.includes("curName === 'theme'") || !appJs.includes("hasBackBtn")) {
+  throw new Error('Bottom nav is not properly hidden on details (reminder) and subpages with back button in app.js!');
 }
-if (appJs.includes("curName === 'theme' || curName === 'focus'")) {
+if (appJs.includes("curName === 'focus'") && appJs.includes("isSubPageWithBack = curName === 'focus'")) {
   throw new Error('Bottom nav should show on Focus mode screen in app.js!');
 }
-console.log('  ✓ Bottom nav properly hidden on Voice and Theme, and shown on Focus mode');
+console.log('  ✓ Bottom nav properly hidden on Reminder details and all pages with back buttons, and shown on Focus/Home/Week/Settings');
 
 // 4. Test dedicated Focus screen
 if (!appJs.includes('function screenFocus()')) {

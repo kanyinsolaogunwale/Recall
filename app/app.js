@@ -4440,8 +4440,20 @@ function updateBottomNav() {
   const cur = navStack[navStack.length - 1];
   const curName = cur ? cur.name : 'home';
 
-  // Hide bottom nav on urgent active reminder alarm, creation, voice, theme, timing, about, or permissions screen
-  if (active || curName === 'active' || curName === 'create' || curName === 'voice' || curName === 'theme' || curName === 'timing' || curName === 'about' || curName === 'permissions') {
+  // Hide bottom nav on any page that has a back icon or is a detail/sub-page (e.g. details, create, theme, voice, etc.)
+  const hasBackBtn = typeof document !== 'undefined' && !!document.querySelector('#screens [data-action="back"]');
+  const isSubPageWithBack = hasBackBtn ||
+                            curName === 'details' ||
+                            curName === 'create' ||
+                            curName === 'voice' ||
+                            curName === 'theme' ||
+                            curName === 'timing' ||
+                            curName === 'about' ||
+                            curName === 'permissions' ||
+                            curName === 'active' ||
+                            !!active;
+
+  if (isSubPageWithBack) {
     navEl.classList.add('nav-hidden');
     return;
   }
@@ -4450,8 +4462,9 @@ function updateBottomNav() {
   navEl.querySelectorAll('.bnav-tab').forEach(tab => {
     const tabName = tab.dataset.tab;
     const isActive = (tabName === 'home' && curName === 'home') ||
+                     (tabName === 'focus' && curName === 'focus') ||
                      (tabName === 'week' && curName === 'week') ||
-                     (tabName === 'settings' && (curName === 'settings' || curName === 'theme' || curName === 'voice' || curName === 'timing' || curName === 'about' || curName === 'permissions'));
+                     (tabName === 'settings' && curName === 'settings');
     tab.classList.toggle('active', !!isActive);
   });
 }
