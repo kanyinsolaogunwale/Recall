@@ -2102,6 +2102,9 @@ function applyTheme() {
   set('--press', rgba(def.dark ? .14 : .08));
   set('--active-bg', def.dark ? shade(def.bg, -.4) : '#1C1B1A');
   set('--knob-on', def.dark ? def.bg : '#FFFFFF');
+  set('--danger-bg', def.dark ? 'rgba(239, 68, 68, 0.22)' : '#FEE2E2');
+  set('--danger-border', def.dark ? 'rgba(239, 68, 68, 0.40)' : '#FECACA');
+  set('--danger-ink', def.dark ? '#F87171' : '#DC2626');
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', def.bg);
 }
@@ -4413,15 +4416,15 @@ function sheet(html, dismiss = true) {
 function confirmDelete(id) {
   const el = sheet(`
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 0 6px;">
-      <div style="width:52px;height:52px;border-radius:50%;background:rgba(220,38,38,.12);color:#DC2626;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
-        ${I.trash(24)}
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--danger-bg, #FEE2E2);border:1px solid var(--danger-border, #FECACA);color:var(--danger-ink, #DC2626);display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 2px 8px rgba(220,38,38,0.12);">
+        ${I.trash(26)}
       </div>
       <div class="sheet-title" style="margin-bottom:6px;font-size:18px;">${T('deleteConfirmTitle')}</div>
       <div style="font-size:14px;color:var(--ink-50);line-height:1.45;max-width:280px;margin-bottom:18px;">${T('deleteConfirmDesc')}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn danger" data-sheet="delete" data-id="${id}" style="background:#DC2626;color:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:8px;">
-        ${I.trash(18)}<span>${T('delete')}</span>
+      <button class="btn danger" data-sheet="delete" data-id="${id}" style="background:#DC2626;color:#FFFFFF;width:100%;height:52px;font-size:16px;font-weight:700;">
+        ${T('delete')}
       </button>
       <button class="btn ghost" data-sheet="cancel">${T('cancel')}</button>
     </div>`);

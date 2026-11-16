@@ -388,7 +388,7 @@ if (!appJs.includes("const cur = state.settings.theme || 'system';")) {
 if (!appJs.includes("handleSystemThemeChange")) {
   throw new Error('System theme change handler missing');
 }
-if (!appJs.includes('btn danger') || !appJs.includes('rgba(220,38,38,.12)')) {
+if (!appJs.includes('btn danger') || !appJs.includes('--danger-bg')) {
   throw new Error('confirmDelete red icon illustration and danger button missing');
 }
 console.log('  ✓ Auto theme is the default and dynamically tracks device theme');
