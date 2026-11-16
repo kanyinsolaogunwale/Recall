@@ -3976,7 +3976,7 @@ function screenPermissions() {
         </div>
 
         <div style="margin-top:16px;">
-          <button class="btn ghost" data-action="perm-test-alert" style="width:100%;height:48px;font-size:14px;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;gap:8px;">
+          <button class="btn primary" data-action="perm-test-alert" style="width:100%;height:50px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">
             ${I.play(16)}<span>${T('testSoundVoice')}</span>
           </button>
         </div>
