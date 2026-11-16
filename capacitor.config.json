@@ -1,0 +1,6 @@
+{
+  "appId": "com.recall.app",
+  "appName": "Recall",
+  "webDir": "app",
+  "bundledWebRuntime": false
+}
