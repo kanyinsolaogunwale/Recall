@@ -3925,8 +3925,8 @@ function screenPermissions() {
         <div style="display:flex;flex-direction:column;">
           ${permRow('notifications', I.bell(20), T('permNotifications'), T('permNotificationsSub'), notifActive)}
           ${permRow('microphone', I.mic(20), T('permMic'), T('permMicSub'), micActive)}
-          ${permRow('overlay', I.sparkle(20), T('permOverlay'), T('permOverlaySub'), overlayActive)}
-          ${permRow('battery', I.focus(20, true), T('permBattery'), T('permBatterySub'), batteryActive)}
+          ${permRow('overlay', I.overlay(20), T('permOverlay'), T('permOverlaySub'), overlayActive)}
+          ${permRow('battery', I.battery(20), T('permBattery'), T('permBatterySub'), batteryActive)}
         </div>
 
         <div style="margin-top:16px;">

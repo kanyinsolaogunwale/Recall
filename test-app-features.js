@@ -18,6 +18,14 @@ console.log('Testing icons in app/reicon-icons.js...');
   console.log(`  ✓ ${name} icon (outline & filled) valid`);
 });
 
+['overlay', 'battery'].forEach(name => {
+  const icon = I[name](20);
+  if (!icon.includes('<svg') || !icon.includes('viewBox="0 0 24 24"')) {
+    throw new Error(`Invalid icon for ${name}`);
+  }
+  console.log(`  ✓ ${name} icon valid`);
+});
+
 // 2. Test app.js syntax & themes
 const appJs = fs.readFileSync(path.join(__dirname, 'app/app.js'), 'utf8');
 const themeMatch = appJs.match(/const THEMES = ({[\s\S]*?});/);
