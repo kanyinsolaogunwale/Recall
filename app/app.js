@@ -4515,11 +4515,13 @@ function confirmDelete(id) {
       <div class="sheet-title" style="margin-bottom:6px;font-size:18px;">${T('deleteConfirmTitle')}</div>
       <div style="font-size:14px;color:var(--ink-50);line-height:1.45;max-width:280px;margin-bottom:18px;">${T('deleteConfirmDesc')}</div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn danger" data-sheet="delete" data-id="${id}" style="background:#DC2626;color:#FFFFFF;width:100%;height:52px;font-size:16px;font-weight:700;">
+    <div style="display:flex;gap:12px;align-items:center;margin-top:6px;">
+      <button class="btn ghost" data-sheet="cancel" style="flex:1;height:50px;min-height:50px;border-radius:25px;font-size:16px;font-weight:600;">
+        ${T('cancel')}
+      </button>
+      <button class="btn danger" data-sheet="delete" data-id="${id}" style="flex:1;background:#DC2626;color:#FFFFFF;height:50px;min-height:50px;border-radius:25px;font-size:16px;font-weight:700;">
         ${T('delete')}
       </button>
-      <button class="btn ghost" data-sheet="cancel">${T('cancel')}</button>
     </div>`);
   el.addEventListener('click', e => {
     const t = e.target.closest('[data-sheet]');

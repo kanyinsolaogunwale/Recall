@@ -391,8 +391,11 @@ if (!appJs.includes("handleSystemThemeChange")) {
 if (!appJs.includes('btn danger') || !appJs.includes('--danger-bg')) {
   throw new Error('confirmDelete red icon illustration and danger button missing');
 }
+if (!appJs.includes('display:flex;gap:12px;align-items:center;margin-top:6px;')) {
+  throw new Error('confirmDelete buttons should be aligned horizontally side-by-side');
+}
 console.log('  ✓ Auto theme is the default and dynamically tracks device theme');
-console.log('  ✓ Red delete icon illustration and primary danger button verified');
+console.log('  ✓ Red delete icon illustration and primary danger button with horizontal side-by-side buttons verified');
 
 // 30. Test Conversational Perspective Shift (1st person -> 2nd person)
 const convMatch = appJs.match(/function conversationalizeTask\([\s\S]*?\n\}/);
