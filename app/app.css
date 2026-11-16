@@ -214,6 +214,8 @@ input{font-family:inherit;outline:none;}
 .btn:active{opacity:.72;}
 .btn svg{flex-shrink:0;display:block;}
 .btn.primary{background:var(--accent);color:var(--on-accent);}
+.btn.danger{background:#DC2626;color:#FFFFFF;}
+.btn.danger:active{background:#B91C1C;opacity:.88;}
 .btn.outline{background:transparent;color:var(--ink);border:1px solid var(--line);letter-spacing:.64px;}
 .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-soft);font-weight:400;letter-spacing:0;}
 .action-dock{

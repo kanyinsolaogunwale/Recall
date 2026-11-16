@@ -388,7 +388,11 @@ if (!appJs.includes("const cur = state.settings.theme || 'system';")) {
 if (!appJs.includes("handleSystemThemeChange")) {
   throw new Error('System theme change handler missing');
 }
+if (!appJs.includes('btn danger') || !appJs.includes('rgba(220,38,38,.12)')) {
+  throw new Error('confirmDelete red icon illustration and danger button missing');
+}
 console.log('  ✓ Auto theme is the default and dynamically tracks device theme');
+console.log('  ✓ Red delete icon illustration and primary danger button verified');
 
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {

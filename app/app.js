@@ -4411,10 +4411,18 @@ function sheet(html, dismiss = true) {
   return el;
 }
 function confirmDelete(id) {
-  const el = sheet(`<div class="sheet-title">${T('deleteConfirmTitle')}</div>
-    <div style="font-size:14px;color:var(--ink-40);margin-bottom:12px;">${T('deleteConfirmDesc')}</div>
+  const el = sheet(`
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 0 6px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(220,38,38,.12);color:#DC2626;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        ${I.trash(24)}
+      </div>
+      <div class="sheet-title" style="margin-bottom:6px;font-size:18px;">${T('deleteConfirmTitle')}</div>
+      <div style="font-size:14px;color:var(--ink-50);line-height:1.45;max-width:280px;margin-bottom:18px;">${T('deleteConfirmDesc')}</div>
+    </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn primary" data-sheet="delete" data-id="${id}">${T('delete')}</button>
+      <button class="btn danger" data-sheet="delete" data-id="${id}" style="background:#DC2626;color:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:8px;">
+        ${I.trash(18)}<span>${T('delete')}</span>
+      </button>
       <button class="btn ghost" data-sheet="cancel">${T('cancel')}</button>
     </div>`);
   el.addEventListener('click', e => {
