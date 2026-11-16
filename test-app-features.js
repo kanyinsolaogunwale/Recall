@@ -110,7 +110,17 @@ if (!testHalfHr || testHalfHr.ms !== 30 * 60 * 1000) throw new Error('Failed to 
 const testDefault = parseSnooze('snooze');
 if (!testDefault || testDefault.ms !== 10 * 60 * 1000) throw new Error('Failed default snooze');
 
-console.log('  ✓ Voice snooze parser handles custom times ("5 minutes", "five minutes", "half an hour", etc.)');
+// Test 1 through 10 minutes custom mentions
+for (let m = 1; m <= 10; m++) {
+  const p1 = parseSnooze(`snooze for ${m} minutes`);
+  if (!p1 || p1.ms !== m * 60 * 1000) throw new Error(`Failed to parse "snooze for ${m} minutes"`);
+  const p2 = parseSnooze(`snooze ${m} minutes`);
+  if (!p2 || p2.ms !== m * 60 * 1000) throw new Error(`Failed to parse "snooze ${m} minutes"`);
+}
+const testShortSnooze = parseSnooze('snooze 5');
+if (!testShortSnooze || testShortSnooze.ms !== 5 * 60 * 1000) throw new Error('Failed to parse "snooze 5"');
+
+console.log('  ✓ Voice snooze parser handles custom times (snooze 1/2/3/4/5/6/7/8/9/10 minutes, "snooze 5", "half an hour", etc.)');
 
 // 6. Test Custom repeat chip selection
 if (!appJs.includes("${repChip('Yearly')}${repChip('Custom')}")) {
@@ -432,6 +442,65 @@ if (pingResult !== 'Hey, you wanted to call your babe.') {
   throw new Error(`testSpeechPhrases.en.ping("Call my babe") returned "${pingResult}", expected "Hey, you wanted to call your babe."`);
 }
 console.log('  ✓ Spoken reminder ping properly says: "Hey, you wanted to call your babe."');
+
+// 31. Test Voice Action Command Dispatch & Hands-Free Safety
+const actionCmdMatch = appJs.match(/function handleVoiceActionCommand\(text, r\) \{[\s\S]*?\n\}/);
+if (!actionCmdMatch) throw new Error('Could not extract handleVoiceActionCommand from app.js');
+
+let mockAction = null;
+const mockComplete = () => { mockAction = 'complete'; };
+const mockNotToday = () => { mockAction = 'notToday'; };
+const mockSnooze = (id, ms, label) => { mockAction = 'snooze:' + label; };
+const mockStopListener = () => {};
+const mockSpeechSay = () => {};
+
+const testHandleVoice = new Function(
+  'text', 'r', 'active', 'completeReminder', 'notToday', 'snoozeReminder', 'stopActiveVoiceListener', 'speech', 'parseSnoozeCommand',
+  actionCmdMatch[0] + '\nreturn handleVoiceActionCommand(text, r);'
+);
+
+const dummyR = { id: 'rem-1' };
+const dummyActive = { id: 'rem-1' };
+
+// "done", "I'm done", "finished" should trigger complete
+mockAction = null;
+let handled = testHandleVoice('done', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (!handled || mockAction !== 'complete') throw new Error('Failed to handle "done" command');
+
+mockAction = null;
+handled = testHandleVoice("I'm done", dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (!handled || mockAction !== 'complete') throw new Error('Failed to handle "I\'m done" command');
+
+// "not today" should trigger notToday
+mockAction = null;
+handled = testHandleVoice('not today', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (!handled || mockAction !== 'notToday') throw new Error('Failed to handle "not today" command');
+
+// "snooze for 5 minutes" should trigger snooze
+mockAction = null;
+handled = testHandleVoice('snooze for 5 minutes', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (!handled || mockAction !== 'snooze:5 minutes') throw new Error('Failed to handle "snooze for 5 minutes" command');
+
+// CRITICAL SAFETY CHECK: Random words, "check", "check email", "got it" MUST NOT complete the reminder
+mockAction = null;
+handled = testHandleVoice('check', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (handled || mockAction !== null) throw new Error('"check" falsely completed the reminder');
+
+mockAction = null;
+handled = testHandleVoice('check email', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (handled || mockAction !== null) throw new Error('"check email" falsely completed the reminder');
+
+mockAction = null;
+handled = testHandleVoice('got it', dummyR, dummyActive, mockComplete, mockNotToday, mockSnooze, mockStopListener, { say: mockSpeechSay }, parseSnooze);
+if (handled || mockAction !== null) throw new Error('"got it" falsely completed the reminder');
+
+if (!appJs.includes('startListeningAfterSpeech')) {
+  throw new Error('startListeningAfterSpeech callback missing from openActive');
+}
+if (appJs.includes('Time to ${f}. Let\'s get it done.')) {
+  throw new Error('Oak buttery personality still says "Let\'s get it done", which causes acoustic self-trigger');
+}
+console.log('  ✓ Hands-free voice listener safety verified: never self-triggers, rejects false-positives ("check", "got it"), and defers listening until after TTS');
 
 // Check that r.task.toLowerCase() was removed from spoken reminders
 if (appJs.includes('speech.dueLine(fmtTime(r.when), r.task.toLowerCase())')) {

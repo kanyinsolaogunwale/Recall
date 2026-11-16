@@ -1494,8 +1494,8 @@ const PERSONALITY_LINES = {
         const isAction = isActionVerbTask(task, lang);
         const f = isAction ? task.charAt(0).toLowerCase() + task.slice(1) : task;
         return isAction
-          ? `Steady now. It's ${t}. Time to ${f}. Let's get it done.`
-          : `Steady now. It's ${t}. Time for ${f}. Let's get it done.`;
+          ? `Steady now. It's ${t}. Time to ${f}. Let's take care of this.`
+          : `Steady now. It's ${t}. Time for ${f}. Let's take care of this.`;
       }
     },
     airy: {
@@ -2739,6 +2739,7 @@ const WORD_NUMS = {
   'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
   'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
   'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
+  'twenty-one': 21, 'twenty one': 21,
   'twenty-five': 25, 'twenty five': 25, 'thirty': 30, 'forty': 40,
   'forty-five': 45, 'forty five': 45, 'fifty': 50, 'sixty': 60
 };
@@ -2747,7 +2748,7 @@ function parseSnoozeCommand(rawText) {
   if (!rawText) return null;
   let text = rawText.toLowerCase().trim();
 
-  const isSnooze = /\b(snooze|later|wait|delay|remind me|give me|in a bit|hold on)\b/i.test(text);
+  const isSnooze = /\b(snooze|later|posponer|rappeler|plus tard|schlummere|später|adiar|wait|delay)\b/i.test(text);
   if (!isSnooze) return null;
 
   text = text.replace(/\bhalf\s+(?:an|a)\s+hour\b/gi, '30 minutes');
@@ -2761,8 +2762,8 @@ function parseSnoozeCommand(rawText) {
 
   const now = Date.now();
 
-  // 1. Relative minutes: e.g. "5 minutes", "for 5 mins", "in 10 min", "5 min"
-  const minMatch = text.match(/\b(\d+)\s*(?:minutes|minute|mins|min)\b/i);
+  // 1. Relative minutes: e.g. "5 minutes", "for 5 mins", "in 10 min", "5 min", "15 minutos"
+  const minMatch = text.match(/\b(\d+)\s*(?:minutes|minute|mins|min|minutos|minuto|minuten)\b/i);
   if (minMatch) {
     const mins = parseInt(minMatch[1], 10);
     if (mins > 0 && mins < 1440) {
@@ -2774,8 +2775,21 @@ function parseSnoozeCommand(rawText) {
     }
   }
 
-  // 2. Relative hours: e.g. "1 hour", "2 hours", "in 1 hr"
-  const hrMatch = text.match(/\b(\d+)\s*(?:hours|hour|hrs|hr)\b/i);
+  // 2. Direct number after snooze: e.g. "snooze for 5", "snooze 5", "snooze 10", "posponer 5"
+  const numAfterSnoozeMatch = text.match(/\b(?:snooze|posponer|adiar|rappeler|schlummere|wait|delay)\s+(?:for\s+|para\s+|pour\s+)?(\d+)\b/i);
+  if (numAfterSnoozeMatch) {
+    const mins = parseInt(numAfterSnoozeMatch[1], 10);
+    if (mins > 0 && mins < 1440) {
+      return {
+        ms: mins * 60 * 1000,
+        label: `${mins} minute${mins === 1 ? '' : 's'}`,
+        speech: `Snoozed for ${mins} minute${mins === 1 ? '' : 's'}.`
+      };
+    }
+  }
+
+  // 3. Relative hours: e.g. "1 hour", "2 hours", "in 1 hr", "2 horas"
+  const hrMatch = text.match(/\b(\d+)\s*(?:hours|hour|hrs|hr|horas|hora|stunden|stunde)\b/i);
   if (hrMatch) {
     const hrs = parseInt(hrMatch[1], 10);
     if (hrs > 0 && hrs < 24) {
@@ -2787,8 +2801,8 @@ function parseSnoozeCommand(rawText) {
     }
   }
 
-  // 3. Specific clock time: e.g. "at 4pm", "until 5:30 pm", "at 16:00"
-  const clockMatch = text.match(/\b(?:at|until)\s+([0-1]?[0-9]|2[0-3])(?::([0-5][0-9]))?\s*(am|pm)?\b/i);
+  // 4. Specific clock time: e.g. "at 4pm", "until 5:30 pm", "at 16:00"
+  const clockMatch = text.match(/\b(?:at|until|a las|jusqu'[aà]|bis)\s+([0-1]?[0-9]|2[0-3])(?::([0-5][0-9]))?\s*(am|pm)?\b/i);
   if (clockMatch) {
     let hours = parseInt(clockMatch[1], 10);
     const mins = parseInt(clockMatch[2] || '0', 10);
@@ -2816,7 +2830,7 @@ function parseSnoozeCommand(rawText) {
     }
   }
 
-  // 4. Default plain snooze if no time detected
+  // 5. Default plain snooze if no time detected (e.g. user just said "snooze", "posponer")
   return {
     ms: 10 * 60 * 1000,
     label: '10 minutes',
@@ -2828,52 +2842,74 @@ let activeVoiceRec = null;
 let activePluginListening = false;
 
 function handleVoiceActionCommand(text, r) {
-  if (!text) return;
+  if (!text || !active || active.id !== r.id) return false;
   const t = text.toLowerCase().trim();
   
-  if (/\b(done|finish|finished|completed|check|did it|got it|listo|hecho|terminado|fait|terminé|erledigt|fertig|feito|pronto)\b/.test(t)) {
+  // Explicit "Done" command matching across 5 languages (never triggers on "check" or task nouns)
+  const isDone = /\b(?:done|i(?:'m| am) done|mark (?:it |as )?done|all done|finished|completed|hecho|listo|terminado|c'est fait|terminé|erledigt|fertig|pronto|conclu[íi]do)\b/i.test(t);
+  if (isDone) {
     stopActiveVoiceListener();
     completeReminder(r.id);
     speech.say(`Checked off hands-free. Great work!`, true);
-  } else if (/\b(not today|skip|cancel|hoy no|saltar|cancelar|pas aujourd'hui|ignorer|annuler|nicht heute|überspringen|abbrechen|hoje n[aã]o|pular)\b/.test(t)) {
+    return true;
+  }
+  
+  // Explicit "Not today" command matching across 5 languages
+  const isNotToday = /\b(?:not today|hoy no|pas aujourd'hui|nicht heute|hoje n[aã]o)\b/i.test(t);
+  if (isNotToday) {
     stopActiveVoiceListener();
     notToday(r.id);
     speech.say(`Moved to tomorrow.`, true);
-  } else {
-    const snoozeCmd = parseSnoozeCommand(t);
-    if (snoozeCmd) {
-      stopActiveVoiceListener();
-      snoozeReminder(r.id, snoozeCmd.ms, snoozeCmd.label);
-      speech.say(snoozeCmd.speech, true);
-    }
+    return true;
   }
+  
+  // Flexible "Snooze" command matching
+  const snoozeCmd = parseSnoozeCommand(t);
+  if (snoozeCmd) {
+    stopActiveVoiceListener();
+    snoozeReminder(r.id, snoozeCmd.ms, snoozeCmd.label);
+    speech.say(snoozeCmd.speech, true);
+    return true;
+  }
+  
+  return false;
 }
 
 function startActiveVoiceListener(r) {
   stopActiveVoiceListener();
+  if (!active || active.id !== r.id) return;
+  activePluginListening = true;
+
+  const handleMatches = (matches) => {
+    if (!activePluginListening || !active || active.id !== r.id) return;
+    if (!matches || !matches.length) return;
+    for (const match of matches) {
+      if (typeof match === 'string' && match.trim()) {
+        const handled = handleVoiceActionCommand(match, r);
+        if (handled) break;
+      }
+    }
+  };
 
   // Try Capacitor native SpeechRecognition plugin first (Android native)
   const SRPlugin = window.Capacitor?.Plugins?.SpeechRecognition;
   if (SRPlugin && typeof SRPlugin.start === 'function') {
-    activePluginListening = true;
     const startNativePlugin = () => {
-      if (!activePluginListening) return;
+      if (!activePluginListening || !active || active.id !== r.id) return;
       try {
+        SRPlugin.removeAllListeners?.();
+        SRPlugin.addListener?.('partialResults', data => {
+          if (!activePluginListening || !active || active.id !== r.id) return;
+          if (data && data.matches) handleMatches(data.matches);
+        });
+
         SRPlugin.start({
           language: LANG_BCP[state.settings.lang] || 'en-US',
-          maxResults: 3,
+          maxResults: 5,
           prompt: 'Say Done, Snooze, or Not today',
           partialResults: true,
           popup: false,
         }).catch(() => {});
-
-        SRPlugin.removeAllListeners?.();
-        SRPlugin.addListener?.('partialResults', data => {
-          if (!activePluginListening) return;
-          if (data && data.matches && data.matches.length) {
-            handleVoiceActionCommand(data.matches[0], r);
-          }
-        });
       } catch (e) {}
     };
 
@@ -2904,6 +2940,7 @@ function startActiveVoiceListener(r) {
     rec.lang = LANG_BCP[state.settings.lang] || 'en-US';
 
     rec.onresult = e => {
+      if (!active || active.id !== r.id) return;
       const last = e.results[e.results.length - 1];
       if (!last || !last[0]) return;
       const text = (last[0].transcript || '').toLowerCase().trim();
@@ -4273,15 +4310,33 @@ function screenActive(r) {
 }
 function openActive(r) {
   navStack = [{ name: 'home', data: {} }];
+  active = r;
+  state.activeId = r.id;
   render('push');
   historyRoot();
-  state.activeId = r.id;
-  startActiveVoiceListener(r);
+
+  // Stop any listener while speech or audio note plays
+  stopActiveVoiceListener();
+
+  const startListeningAfterSpeech = () => {
+    // Only begin listening after speech has fully completed, plus 400ms echo cooldown
+    setTimeout(() => {
+      if (active && active.id === r.id) {
+        startActiveVoiceListener(r);
+      }
+    }, 400);
+  };
+
   if (r.voiceClip && r.voiceClip.data) {
-    playVoiceClip(r.voiceClip.data);
+    playVoiceClip(r.voiceClip.data, () => startListeningAfterSpeech());
   } else {
-    const spoken = speech.say(speech.dueLine(fmtTime(r.when), r.task));
-    if (!spoken) toast(`It's time: ${r.task}`);
+    const spoken = speech.say(speech.dueLine(fmtTime(r.when), r.task), false, () => {
+      startListeningAfterSpeech();
+    });
+    if (!spoken) {
+      toast(`It's time: ${r.task}`);
+      startListeningAfterSpeech();
+    }
   }
 }
 
@@ -5617,6 +5672,12 @@ screensEl.addEventListener('keydown', e => {
 /* ---------- boot ---------- */
 if ('Notification' in window && Notification.permission === 'granted') state.settings.notifications = true;
 applyTheme();
+if (state.activeId) {
+  const savedActive = find(state.activeId);
+  if (savedActive && (savedActive.status === 'upcoming' || savedActive.status === 'snoozed')) {
+    active = savedActive;
+  }
+}
 render();
 syncKeyboard();
 
